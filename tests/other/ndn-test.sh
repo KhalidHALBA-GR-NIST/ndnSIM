@@ -22,10 +22,18 @@ echo "Using broadcast forwarding strategy.."
 
 echo
 
+
 # using best route forwarding strategy
 echo "Using best route forwarding strategy.."
 
 ../../../waf --run ndn-test --command-template="%s --old-cs=ns3::ndn::cs::Lru --cs-size=${size} --rate=${rate} --pit=$(true) --strategy="/localhost/nfd/strategy/best-route" --sim-time=${sim_time}"
+
+echo
+
+# using broadcast newnonce forwarding strategy
+echo "Using broadcast newnonce forwarding strategy.."
+
+../../../waf --run ndn-test --command-template="%s --old-cs=ns3::ndn::cs::Lru --cs-size=${size} --rate=${rate} --sim-time=${sim_time} --pit=$(true) --strategy="/localhost/nfd/strategy/broadcast-newnonce" "
 
 echo
 
@@ -52,3 +60,12 @@ echo
 echo "Using best route forwarding strategy.."
 
 ../../../waf --run ndn-test --command-template="%s --cs-size=${size} --rate=${rate} --strategy="/localhost/nfd/strategy/best-route" --sim-time=${sim_time}"
+
+# using broadcast newnonce forwarding strategy
+echo "Using broadcast newnonce forwarding strategy.."
+
+../../../waf --run ndn-test --command-template="%s --cs-size=${size} --rate=${rate} --strategy="/localhost/nfd/strategy/broadcast-newnonce" --sim-time=${sim_time}"
+
+echo
+
+
