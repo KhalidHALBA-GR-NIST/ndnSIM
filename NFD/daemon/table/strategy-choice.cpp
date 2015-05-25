@@ -36,16 +36,15 @@ using fw::Strategy;
 
 NFD_LOG_INIT("StrategyChoice");
 
-StrategyChoice::StrategyChoice(NameTree& nameTree, shared_ptr<Strategy> defaultStrategy)
-  : m_nameTree(nameTree)
-  , m_nItems(0)
+StrategyChoice::StrategyChoice(NameTree& nameTree, shared_ptr<Strategy> defaultStrategy) :
+    m_nameTree(nameTree), m_nItems(0)
 {
   this->setDefaultStrategy(defaultStrategy);
 }
 
-bool
-StrategyChoice::hasStrategy(const Name& strategyName, bool isExact) const
+bool StrategyChoice::hasStrategy(const Name& strategyName, bool isExact) const
 {
+  NFD_LOG_INFO("Has strategy: " << strategyName.toUri());
   if (isExact) {
     return m_strategyInstances.count(strategyName) > 0;
   }
@@ -54,9 +53,9 @@ StrategyChoice::hasStrategy(const Name& strategyName, bool isExact) const
   }
 }
 
-bool
-StrategyChoice::install(shared_ptr<Strategy> strategy)
+bool StrategyChoice::install(shared_ptr<Strategy> strategy)
 {
+  NFD_LOG_INFO("Install strategy: " << strategy->getName().toUri());
   BOOST_ASSERT(static_cast<bool>(strategy));
   const Name& strategyName = strategy->getName();
 
@@ -73,30 +72,34 @@ fw::Strategy*
 StrategyChoice::getStrategy(const Name& strategyName) const
 {
   fw::Strategy* candidate = nullptr;
-  for (auto it = m_strategyInstances.lower_bound(strategyName);
-       it != m_strategyInstances.end() && strategyName.isPrefixOf(it->first); ++it) {
-    switch (it->first.size() - strategyName.size()) {
-    case 0: // exact match
-      return it->second.get();
-    case 1: // unversioned strategyName matches versioned strategy
-      candidate = it->second.get();
-      break;
+  for (auto n : m_strategyInstances) {
+    // Include longer strategy names (with parameters)
+    if (strategyName.isPrefixOf(n.first) || n.first.isPrefixOf(strategyName)) {
+      switch (n.first.size() + 1 - strategyName.size()) {
+      case 0:  // Strategy with parameters (one element longer than exact match)
+        return n.second.get();
+      case 1:  // exact match
+        return n.second.get();
+      case 2:  // unversioned strategy name (one element shorter)
+        candidate = n.second.get();
+        break;
+      }
     }
   }
   return candidate;
 }
 
-bool
-StrategyChoice::insert(const Name& prefix, const Name& strategyName)
+bool StrategyChoice::insert(const Name& prefix, const Name& strategyName)
 {
+  NFD_LOG_INFO("Insert strategy : " << strategyName << " to " << prefix);
   Strategy* strategy = this->getStrategy(strategyName);
   if (strategy == nullptr) {
     NFD_LOG_ERROR("insert(" << prefix << "," << strategyName << ") strategy not installed");
     return false;
   }
 
-  shared_ptr<name_tree::Entry> nte = m_nameTree.lookup(prefix);
-  shared_ptr<Entry> entry = nte->getStrategyChoiceEntry();
+  shared_ptr < name_tree::Entry > nte = m_nameTree.lookup(prefix);
+  shared_ptr < Entry > entry = nte->getStrategyChoiceEntry();
   Strategy* oldStrategy = nullptr;
   if (static_cast<bool>(entry)) {
     if (entry->getStrategy().getName() == strategy->getName()) {
@@ -104,34 +107,41 @@ StrategyChoice::insert(const Name& prefix, const Name& strategyName)
       return true;
     }
     oldStrategy = &entry->getStrategy();
-    NFD_LOG_TRACE("insert(" << prefix << ") changing from " << oldStrategy->getName() <<
-                  " to " << strategy->getName());
+    NFD_LOG_TRACE(
+        "insert(" << prefix << ") changing from " << oldStrategy->getName() << " to "
+            << strategy->getName());
   }
 
   if (!static_cast<bool>(entry)) {
     oldStrategy = &this->findEffectiveStrategy(prefix);
-    entry = make_shared<Entry>(prefix);
+    entry = make_shared < Entry > (prefix);
     nte->setStrategyChoiceEntry(entry);
     ++m_nItems;
     NFD_LOG_TRACE("insert(" << prefix << ") new entry " << strategy->getName());
   }
 
   this->changeStrategy(*entry, *oldStrategy, *strategy);
+
+  // Also set strategy parameters
+  std::string strName = strategyName.toUri();
+  std::vector < std::string > strVector;
+  boost::split(strVector, strName, boost::is_any_of("/"));
   entry->setStrategy(*strategy);
+  // Use last element after "/" as parameter string
+  entry->setParameters(strVector.back());
   return true;
 }
 
-void
-StrategyChoice::erase(const Name& prefix)
+void StrategyChoice::erase(const Name& prefix)
 {
   BOOST_ASSERT(prefix.size() > 0);
 
-  shared_ptr<name_tree::Entry> nte = m_nameTree.findExactMatch(prefix);
+  shared_ptr < name_tree::Entry > nte = m_nameTree.findExactMatch(prefix);
   if (!static_cast<bool>(nte)) {
     return;
   }
 
-  shared_ptr<Entry> entry = nte->getStrategyChoiceEntry();
+  shared_ptr < Entry > entry = nte->getStrategyChoiceEntry();
   if (!static_cast<bool>(entry)) {
     return;
   }
@@ -146,45 +156,54 @@ StrategyChoice::erase(const Name& prefix)
   --m_nItems;
 }
 
-std::pair<bool, Name>
-StrategyChoice::get(const Name& prefix) const
+std::pair<bool, Name> StrategyChoice::get(const Name& prefix) const
 {
-  shared_ptr<name_tree::Entry> nte = m_nameTree.findExactMatch(prefix);
+  shared_ptr < name_tree::Entry > nte = m_nameTree.findExactMatch(prefix);
   if (!static_cast<bool>(nte)) {
-    return { false, Name() };
+    return {false, Name()};
   }
 
-  shared_ptr<Entry> entry = nte->getStrategyChoiceEntry();
+  shared_ptr < Entry > entry = nte->getStrategyChoiceEntry();
   if (!static_cast<bool>(entry)) {
-    return { false, Name() };
+    return {false, Name()};
   }
 
-  return { true, entry->getStrategy().getName() };
+  return {true, entry->getStrategy().getName()};
 }
 
 Strategy&
 StrategyChoice::findEffectiveStrategy(const Name& prefix) const
 {
-  shared_ptr<name_tree::Entry> nte = m_nameTree.findLongestPrefixMatch(prefix,
-    [] (const name_tree::Entry& entry) {
-      return static_cast<bool>(entry.getStrategyChoiceEntry());
-    });
+  shared_ptr < name_tree::Entry > nte = m_nameTree.findLongestPrefixMatch(prefix,
+      [] (const name_tree::Entry& entry) {
+        return static_cast<bool>(entry.getStrategyChoiceEntry());
+      });
 
   BOOST_ASSERT(static_cast<bool>(nte));
   return nte->getStrategyChoiceEntry()->getStrategy();
 }
 
+std::string StrategyChoice::findEffectiveParameters(const Name& prefix) const
+{
+  shared_ptr < name_tree::Entry > nte = m_nameTree.findLongestPrefixMatch(prefix,
+      [] (const name_tree::Entry& entry) {
+        return static_cast<bool>(entry.getStrategyChoiceEntry());
+      });
+
+  BOOST_ASSERT(static_cast<bool>(nte));
+  return nte->getStrategyChoiceEntry()->getParameters();
+}
+
 Strategy&
 StrategyChoice::findEffectiveStrategy(shared_ptr<name_tree::Entry> nte) const
 {
-  shared_ptr<strategy_choice::Entry> entry = nte->getStrategyChoiceEntry();
+  shared_ptr < strategy_choice::Entry > entry = nte->getStrategyChoiceEntry();
   if (static_cast<bool>(entry))
     return entry->getStrategy();
 
-  nte = m_nameTree.findLongestPrefixMatch(nte,
-    [] (const name_tree::Entry& entry) {
-      return static_cast<bool>(entry.getStrategyChoiceEntry());
-    });
+  nte = m_nameTree.findLongestPrefixMatch(nte, [] (const name_tree::Entry& entry) {
+    return static_cast<bool>(entry.getStrategyChoiceEntry());
+  });
 
   BOOST_ASSERT(static_cast<bool>(nte));
   return nte->getStrategyChoiceEntry()->getStrategy();
@@ -193,7 +212,7 @@ StrategyChoice::findEffectiveStrategy(shared_ptr<name_tree::Entry> nte) const
 Strategy&
 StrategyChoice::findEffectiveStrategy(const pit::Entry& pitEntry) const
 {
-  shared_ptr<name_tree::Entry> nte = m_nameTree.get(pitEntry);
+  shared_ptr < name_tree::Entry > nte = m_nameTree.get(pitEntry);
 
   BOOST_ASSERT(static_cast<bool>(nte));
   return this->findEffectiveStrategy(nte);
@@ -202,21 +221,20 @@ StrategyChoice::findEffectiveStrategy(const pit::Entry& pitEntry) const
 Strategy&
 StrategyChoice::findEffectiveStrategy(const measurements::Entry& measurementsEntry) const
 {
-  shared_ptr<name_tree::Entry> nte = m_nameTree.get(measurementsEntry);
+  shared_ptr < name_tree::Entry > nte = m_nameTree.get(measurementsEntry);
 
   BOOST_ASSERT(static_cast<bool>(nte));
   return this->findEffectiveStrategy(nte);
 }
 
-void
-StrategyChoice::setDefaultStrategy(shared_ptr<Strategy> strategy)
+void StrategyChoice::setDefaultStrategy(shared_ptr<Strategy> strategy)
 {
   this->install(strategy);
 
   // don't use .insert here, because it will invoke findEffectiveStrategy
   // which expects an existing root entry
-  shared_ptr<name_tree::Entry> nte = m_nameTree.lookup(Name());
-  shared_ptr<Entry> entry = make_shared<Entry>(Name());
+  shared_ptr < name_tree::Entry > nte = m_nameTree.lookup(Name());
+  shared_ptr < Entry > entry = make_shared < Entry > (Name());
   nte->setStrategyChoiceEntry(entry);
   ++m_nItems;
   NFD_LOG_INFO("setDefaultStrategy " << strategy->getName());
@@ -224,8 +242,7 @@ StrategyChoice::setDefaultStrategy(shared_ptr<Strategy> strategy)
   entry->setStrategy(*strategy);
 }
 
-static inline void
-clearStrategyInfo(const name_tree::Entry& nte)
+static inline void clearStrategyInfo(const name_tree::Entry& nte)
 {
   NFD_LOG_TRACE("clearStrategyInfo " << nte.getPrefix());
 
@@ -243,45 +260,41 @@ clearStrategyInfo(const name_tree::Entry& nte)
   }
 }
 
-void
-StrategyChoice::changeStrategy(strategy_choice::Entry& entry,
-                               fw::Strategy& oldStrategy,
-                               fw::Strategy& newStrategy)
+void StrategyChoice::changeStrategy(strategy_choice::Entry& entry, fw::Strategy& oldStrategy,
+    fw::Strategy& newStrategy)
 {
   if (&oldStrategy == &newStrategy) {
     return;
   }
 
-  NFD_LOG_INFO("changeStrategy(" << entry.getPrefix() << ")"
-               << " from " << oldStrategy.getName()
-               << " to " << newStrategy.getName());
+  NFD_LOG_INFO(
+      "changeStrategy(" << entry.getPrefix() << ")" << " from " << oldStrategy.getName() << " to "
+          << newStrategy.getName());
 
   // reset StrategyInfo on a portion of NameTree,
   // where entry's effective strategy is covered by the changing StrategyChoice entry
   const name_tree::Entry* rootNte = m_nameTree.get(entry).get();
   auto&& ntChanged = m_nameTree.partialEnumerate(entry.getPrefix(),
-    [&rootNte] (const name_tree::Entry& nte) -> std::pair<bool, bool> {
-      if (&nte == rootNte) {
+      [&rootNte] (const name_tree::Entry& nte) -> std::pair<bool, bool> {
+        if (&nte == rootNte) {
+          return {true, true};
+        }
+        if (static_cast<bool>(nte.getStrategyChoiceEntry())) {
+          return {false, false};
+        }
         return {true, true};
-      }
-      if (static_cast<bool>(nte.getStrategyChoiceEntry())) {
-        return {false, false};
-      }
-      return {true, true};
-    });
+      });
   for (const name_tree::Entry& nte : ntChanged) {
     clearStrategyInfo(nte);
   }
 }
 
-StrategyChoice::const_iterator
-StrategyChoice::begin() const
+StrategyChoice::const_iterator StrategyChoice::begin() const
 {
-  auto&& enumerable = m_nameTree.fullEnumerate(
-    [] (const name_tree::Entry& entry) {
-      return static_cast<bool>(entry.getStrategyChoiceEntry());
-    });
+  auto&& enumerable = m_nameTree.fullEnumerate([] (const name_tree::Entry& entry) {
+    return static_cast<bool>(entry.getStrategyChoiceEntry());
+  });
   return const_iterator(enumerable.begin());
 }
 
-} // namespace nfd
+}  // namespace nfd

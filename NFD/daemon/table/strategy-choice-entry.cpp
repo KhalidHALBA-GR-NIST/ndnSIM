@@ -30,9 +30,8 @@
 namespace nfd {
 namespace strategy_choice {
 
-Entry::Entry(const Name& prefix)
-  : m_prefix(prefix)
-  , m_strategy(nullptr)
+Entry::Entry(const Name& prefix) :
+    m_prefix(prefix), m_strategy(nullptr)
 {
 }
 
@@ -42,5 +41,5 @@ Entry::getStrategyName() const
   return m_strategy->getName();
 }
 
-} // namespace strategy_choice
-} // namespace nfd
+}  // namespace strategy_choice
+}  // namespace nfd

@@ -4,4 +4,6 @@
 *~
 .DS_Store
 docs/doxygen.warnings.log
-
+test.cc
+.*project
+helper

@@ -47,7 +47,8 @@ class StrategyChoice : noncopyable
 public:
   StrategyChoice(NameTree& nameTree, shared_ptr<fw::Strategy> defaultStrategy);
 
-public: // available Strategy types
+public:
+  // available Strategy types
   /** \brief determines if a strategy is installed
    *  \param isExact true to require exact match, false to permit unversioned strategyName
    *  \return true if strategy is installed
@@ -62,7 +63,8 @@ public: // available Strategy types
   bool
   install(shared_ptr<fw::Strategy> strategy);
 
-public: // Strategy Choice table
+public:
+  // Strategy Choice table
   /** \brief set strategy of prefix to be strategyName
    *  \param strategyName the strategy to be used
    *  \return true on success
@@ -88,7 +90,8 @@ public: // Strategy Choice table
   std::pair<bool, Name>
   get(const Name& prefix) const;
 
-public: // effective strategy
+public:
+  // effective strategy
   /// get effective strategy for prefix
   fw::Strategy&
   findEffectiveStrategy(const Name& prefix) const;
@@ -101,9 +104,13 @@ public: // effective strategy
   fw::Strategy&
   findEffectiveStrategy(const measurements::Entry& measurementsEntry) const;
 
-public: // enumeration
-  class const_iterator
-    : public std::iterator<std::forward_iterator_tag, const strategy_choice::Entry>
+  // find effective strategy parameters for prefix
+  std::string findEffectiveParameters(const Name& prefix) const;
+
+public:
+  // enumeration
+  class const_iterator : public std::iterator<std::forward_iterator_tag,
+      const strategy_choice::Entry>
   {
   public:
     explicit
@@ -154,9 +161,8 @@ private:
   setDefaultStrategy(shared_ptr<fw::Strategy> strategy);
 
   void
-  changeStrategy(strategy_choice::Entry& entry,
-                 fw::Strategy& oldStrategy,
-                 fw::Strategy& newStrategy);
+  changeStrategy(strategy_choice::Entry& entry, fw::Strategy& oldStrategy,
+      fw::Strategy& newStrategy);
 
   fw::Strategy&
   findEffectiveStrategy(shared_ptr<name_tree::Entry> nte) const;
@@ -169,32 +175,26 @@ private:
   StrategyInstanceTable m_strategyInstances;
 };
 
-inline size_t
-StrategyChoice::size() const
+inline size_t StrategyChoice::size() const
 {
   return m_nItems;
 }
 
-inline StrategyChoice::const_iterator
-StrategyChoice::end() const
+inline StrategyChoice::const_iterator StrategyChoice::end() const
 {
   return const_iterator(m_nameTree.end());
 }
 
-inline
-StrategyChoice::const_iterator::const_iterator(const NameTree::const_iterator& it)
-  : m_nameTreeIterator(it)
+inline StrategyChoice::const_iterator::const_iterator(const NameTree::const_iterator& it) :
+    m_nameTreeIterator(it)
 {
 }
 
-inline
-StrategyChoice::const_iterator::~const_iterator()
+inline StrategyChoice::const_iterator::~const_iterator()
 {
 }
 
-inline
-StrategyChoice::const_iterator
-StrategyChoice::const_iterator::operator++(int)
+inline StrategyChoice::const_iterator StrategyChoice::const_iterator::operator++(int)
 {
   StrategyChoice::const_iterator temp(*this);
   ++(*this);
@@ -214,24 +214,23 @@ StrategyChoice::const_iterator::operator*() const
   return *(m_nameTreeIterator->getStrategyChoiceEntry());
 }
 
-inline shared_ptr<strategy_choice::Entry>
-StrategyChoice::const_iterator::operator->() const
+inline shared_ptr<strategy_choice::Entry> StrategyChoice::const_iterator::operator->() const
 {
   return m_nameTreeIterator->getStrategyChoiceEntry();
 }
 
-inline bool
-StrategyChoice::const_iterator::operator==(const StrategyChoice::const_iterator& other) const
+inline bool StrategyChoice::const_iterator::operator==(
+    const StrategyChoice::const_iterator& other) const
 {
   return m_nameTreeIterator == other.m_nameTreeIterator;
 }
 
-inline bool
-StrategyChoice::const_iterator::operator!=(const StrategyChoice::const_iterator& other) const
+inline bool StrategyChoice::const_iterator::operator!=(
+    const StrategyChoice::const_iterator& other) const
 {
   return m_nameTreeIterator != other.m_nameTreeIterator;
 }
 
-} // namespace nfd
+}  // namespace nfd
 
 #endif // NFD_DAEMON_TABLE_STRATEGY_CHOICE_HPP
