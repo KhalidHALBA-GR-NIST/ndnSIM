@@ -6,7 +6,7 @@
 namespace nfd {
 namespace fw {
 
-/** \class BroadcastNewNonceStrategy
+/**
  *  \brief Forwards interests to all nexthops using a new nonce.
  *
  *  The parameter "nonce" denotes if a new nonce should be used (nonce=true) or not (nonce=false).
