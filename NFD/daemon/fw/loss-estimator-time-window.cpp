@@ -34,19 +34,19 @@ LossEstimatorTimeWindow::LossEstimatorTimeWindow(time::steady_clock::duration in
   }
 }
 
-void LossEstimatorTimeWindow::addSentInterest(const std::string name)
+void LossEstimatorTimeWindow::addSentInterest(const std::string& name)
 {
   const time::steady_clock::TimePoint now = time::steady_clock::now();
 
   auto n = unknownMap.insert(std::make_pair(now, name));
   if (n.second == false) {
-    throw std::runtime_error("Duplicate insertion!");
     NFD_LOG_DEBUG("Duplicate insertion: " << name << " Should not happen!\n");
+    throw std::runtime_error("Duplicate insertion!");
   }
 
 }
 
-void LossEstimatorTimeWindow::addSatisfiedInterest(const std::string name)
+void LossEstimatorTimeWindow::addSatisfiedInterest(const std::string& name)
 {
   bool found = false;
 
@@ -60,8 +60,8 @@ void LossEstimatorTimeWindow::addSatisfiedInterest(const std::string name)
     }
   }
   if (found == false) {
-    throw std::runtime_error("Interest not found! Should not happen!\n");
     NFD_LOG_DEBUG("Interest " << name << " not found! Should not happen!\n");
+    throw std::runtime_error("Interest not found! Should not happen!\n");
   }
 }
 
@@ -91,14 +91,14 @@ double LossEstimatorTimeWindow::getLossPercentage()
   time::steady_clock::TimePoint lastValidInterests = now - m_windowSize;
   lossMap.erase(lossMap.begin(), lossMap.upper_bound(lastValidInterests));
 
-  int satisfied = 0;
-  int lost = 0;
   // Return 0 if the map is empty
-  if (lossMap.size() == 0) {
+  if (lossMap.empty()) {
     NFD_LOG_TRACE("LossMap empty!");
     perc = 0;
   }
   else {
+    int satisfied = 0;
+    int lost = 0;
     for (auto n : lossMap) {
       if (n.second == PacketType::SATISFIED) {
         satisfied++;

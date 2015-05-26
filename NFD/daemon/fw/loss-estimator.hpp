@@ -39,12 +39,12 @@ public:
   /**
    * Adds one sent interest packet
    */
-  virtual void addSentInterest(const std::string name) = 0;
+  virtual void addSentInterest(const std::string& name) = 0;
 
   /**
    * Adds one satisfied interest packet (= received data packet)
    */
-  virtual void addSatisfiedInterest(const std::string name) = 0;
+  virtual void addSatisfiedInterest(const std::string& name) = 0;
 
   /**
    * Returns the loss percentage as value between 0 and 1.

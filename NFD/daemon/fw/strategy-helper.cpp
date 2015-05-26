@@ -48,7 +48,7 @@ std::map<std::string, std::string> StrategyHelper::getParameterMap(std::string p
 
     std::string key = substringVector.front();
     std::string value = substringVector.back();
-    outputMap[substringVector.front()] = substringVector.back();
+    outputMap[key] = value;
   }
 
   return outputMap;

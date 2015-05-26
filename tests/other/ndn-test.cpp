@@ -18,7 +18,6 @@
  **/
 
 // ndn-test.cpp
-
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
 #include "ns3/point-to-point-module.h"
@@ -43,13 +42,12 @@ namespace ns3 {
  *     NS_LOG=ndn.Consumer ./waf --run ndn-test
  */
 
-class Tester {
+class Tester
+{
 public:
-  Tester()
-    : m_csSize(100)
-    , m_interestRate(1000)
-    , m_shouldEvaluatePit(false)
-    , m_simulationTime(Seconds(2000) / m_interestRate)
+  Tester() :
+      m_csSize(100), m_interestRate(1000), m_shouldEvaluatePit(false), m_initialOverhead(0),
+          m_simulationTime(Seconds(2000) / m_interestRate)
   {
   }
 
@@ -72,26 +70,18 @@ private:
   Time m_simulationTime;
 };
 
-void
-Tester::printHeader(std::ostream& os)
+void Tester::printHeader(std::ostream& os)
 {
   m_initialOverhead = MemUsage::Get() / 1024.0 / 1024.0;
-  os << "SimulationTime"
-     << "\t"
-     << "RealTime"
-     << "\t"
-     << "NumberOfInterests (total)"
-     << "\t"
-     << "NumberOfInterests (per real time)"
-     << "\n";
+  os << "SimulationTime" << "\t" << "RealTime" << "\t" << "NumberOfInterests (total)" << "\t"
+      << "NumberOfInterests (per real time)" << "\n";
 }
 
-void
-Tester::printStats(std::ostream& os, Time nextPrintTime, double beginRealTime)
+void Tester::printStats(std::ostream& os, Time nextPrintTime, double beginRealTime)
 {
   ::timeval t;
   gettimeofday(&t, NULL);
-  double realTime = t.tv_sec + (0.000001 * (unsigned)t.tv_usec) - beginRealTime;
+  double realTime = t.tv_sec + (0.000001 * (unsigned) t.tv_usec) - beginRealTime;
   Time simTime = Simulator::Now();
 
   os << simTime << "\t";
@@ -111,7 +101,7 @@ Tester::printStats(std::ostream& os, Time nextPrintTime, double beginRealTime)
       pitCount += pitSize;
 
     if (true != true) {
-      Ptr<ndn::ContentStore> cs = (*node)->GetObject<ndn::ContentStore>();
+      Ptr < ndn::ContentStore > cs = (*node)->GetObject<ndn::ContentStore>();
       if (cs != 0)
         csCount += cs->GetSize();
     }
@@ -132,7 +122,7 @@ Tester::printStats(std::ostream& os, Time nextPrintTime, double beginRealTime)
     if (m_shouldEvaluatePit) {
       if (pitCount != 0) {
         os << "Approximate memory overhead per PIT entry:"
-           <<  1000 * (finalOverhead - m_initialOverhead) / pitCount << "KiB\n";
+            << 1000 * (finalOverhead - m_initialOverhead) / pitCount << "KiB\n";
       }
       else {
         os << "`The number of PIT entries is equal to zero\n";
@@ -141,7 +131,7 @@ Tester::printStats(std::ostream& os, Time nextPrintTime, double beginRealTime)
     else {
       if (csCount != 0) {
         os << "Approximate memory overhead per CS entry:"
-           <<  1000 * (finalOverhead - m_initialOverhead) / csCount << "KiB\n";
+            << 1000 * (finalOverhead - m_initialOverhead) / csCount << "KiB\n";
       }
       else {
         os << "The number of CS entries is equal to zero\n";
@@ -150,11 +140,10 @@ Tester::printStats(std::ostream& os, Time nextPrintTime, double beginRealTime)
   }
 
   Simulator::Schedule(nextPrintTime, &Tester::printStats, this, ref(os), nextPrintTime,
-                      beginRealTime);
+      beginRealTime);
 }
 
-int
-Tester::run(int argc, char* argv[])
+int Tester::run(int argc, char* argv[])
 {
   // setting default parameters for PointToPoint links and channels
   Config::SetDefault("ns3::PointToPointNetDevice::DataRate", StringValue("10000Mbps"));
@@ -164,16 +153,13 @@ Tester::run(int argc, char* argv[])
   // Read optional command-line parameters (e.g., enable visualizer with ./waf --run=<> --visualize
   CommandLine cmd;
   cmd.AddValue("old-cs", "Old content store to use "
-                         "(e.g., ns3::ndn::cs::Lru, ns3::ndn::cs::Lfu, ...)",
-               m_oldContentStore);
+      "(e.g., ns3::ndn::cs::Lru, ns3::ndn::cs::Lfu, ...)", m_oldContentStore);
   cmd.AddValue("cs-size", "Maximum number of cached packets per node", m_csSize);
   cmd.AddValue("rate", "Interest rate", m_interestRate);
-  cmd.AddValue("pit", "Perform PIT evaluation if this parameter is true",
-               m_shouldEvaluatePit);
+  cmd.AddValue("pit", "Perform PIT evaluation if this parameter is true", m_shouldEvaluatePit);
   cmd.AddValue("strategy", "Choose forwarding strategy "
-                           "(e.g., /localhost/nfd/strategy/broadcast, "
-                           "/localhost/nfd/strategy/best-route, ...) ",
-               m_strategy);
+      "(e.g., /localhost/nfd/strategy/broadcast, "
+      "/localhost/nfd/strategy/best-route, ...) ", m_strategy);
   cmd.AddValue("sim-time", "Simulation time", m_simulationTime);
   cmd.Parse(argc, argv);
 
@@ -207,7 +193,7 @@ Tester::run(int argc, char* argv[])
   // Consumer will request /prefix/0, /prefix/1, ...
   consumerHelper.SetPrefix("/prefix");
   consumerHelper.SetAttribute("Frequency", DoubleValue(m_interestRate));
-  consumerHelper.Install(nodes.Get(0)); // first node
+  consumerHelper.Install(nodes.Get(0));  // first node
 
   if (!m_shouldEvaluatePit) {
     // Producer
@@ -215,17 +201,17 @@ Tester::run(int argc, char* argv[])
     // Producer will reply to all requests starting with /prefix
     producerHelper.SetPrefix("/prefix");
     producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
-    producerHelper.Install(nodes.Get(1)); // last node
+    producerHelper.Install(nodes.Get(1));  // last node
   }
 
   Simulator::Stop(m_simulationTime);
 
   struct ::timeval t;
   gettimeofday(&t, NULL);
-  double beginRealTime = t.tv_sec + (0.000001 * (unsigned)t.tv_usec);
+  double beginRealTime = t.tv_sec + (0.000001 * (unsigned) t.tv_usec);
   Simulator::Schedule(Seconds(0), &Tester::printHeader, this, ref(std::cout));
   Simulator::Schedule(m_simulationTime / 200, &Tester::printStats, this, ref(std::cout),
-                      m_simulationTime / 200, beginRealTime);
+      m_simulationTime / 200, beginRealTime);
 
   L2RateTracer::InstallAll("drop-trace2.txt", Seconds(0.5));
   Simulator::Run();
@@ -234,10 +220,9 @@ Tester::run(int argc, char* argv[])
   return 0;
 }
 
-} // namespace ns3
+}  // namespace ns3
 
-int
-main(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
   ns3::Tester tester;
   return tester.run(argc, argv);

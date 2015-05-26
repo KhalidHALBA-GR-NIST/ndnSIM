@@ -55,7 +55,7 @@ public:
    *
    * \throws runtime-exception if the name already exists!
    */
-  void addSentInterest(const std::string name)
+  void addSentInterest(const std::string& name)
   DECL_OVERRIDE;
 
   /*
@@ -63,7 +63,7 @@ public:
    *
    * \throws runtime-exception if no matching data packet exists!
    */
-  void addSatisfiedInterest(const std::string name)
+  void addSatisfiedInterest(const std::string& name)
   DECL_OVERRIDE;
 
   /*
