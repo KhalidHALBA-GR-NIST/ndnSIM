@@ -30,11 +30,8 @@ namespace nfd {
 using fw::Strategy;
 
 MeasurementsAccessor::MeasurementsAccessor(Measurements& measurements,
-                                           StrategyChoice& strategyChoice,
-                                           Strategy* strategy)
-  : m_measurements(measurements)
-  , m_strategyChoice(strategyChoice)
-  , m_strategy(strategy)
+    const StrategyChoice& strategyChoice, const Strategy& strategy) :
+    m_measurements(measurements), m_strategyChoice(strategyChoice), m_strategy(&strategy)
 {
 }
 
@@ -42,10 +39,10 @@ MeasurementsAccessor::~MeasurementsAccessor()
 {
 }
 
-shared_ptr<measurements::Entry>
-MeasurementsAccessor::filter(const shared_ptr<measurements::Entry>& entry)
+shared_ptr<measurements::Entry> MeasurementsAccessor::filter(
+    const shared_ptr<measurements::Entry>& entry) const
 {
-  if (!static_cast<bool>(entry)) {
+  if (entry == nullptr) {
     return entry;
   }
 
@@ -56,4 +53,4 @@ MeasurementsAccessor::filter(const shared_ptr<measurements::Entry>& entry)
   return shared_ptr<measurements::Entry>();
 }
 
-} // namespace nfd
+}  // namespace nfd

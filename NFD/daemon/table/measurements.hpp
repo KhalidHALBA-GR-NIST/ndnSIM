@@ -33,15 +33,42 @@ namespace nfd {
 
 namespace fib {
 class Entry;
-}
+}  // namespace fib
 
 namespace pit {
 class Entry;
-}
+}  // namespace pit
 
+namespace measurements {
 
-/** \class Measurement
- *  \brief represents the Measurements table
+/** \brief a predicate that accepts or rejects a \p Entry
+ */
+typedef std::function<bool(const Entry&)> EntryPredicate;
+
+/** \brief an \p EntryPredicate that accepts any \p Entry
+ */
+class AnyEntry
+{
+public:
+  bool operator()(const Entry& entry)
+  {
+    return true;
+  }
+};
+
+template<typename T>
+class EntryWithStrategyInfo
+{
+public:
+  bool operator()(const Entry& entry)
+  {
+    return entry.getStrategyInfo<T>() != nullptr;
+  }
+};
+
+}  // namespace measurements
+
+/** \brief represents the Measurements table
  */
 class Measurements : noncopyable
 {
@@ -49,17 +76,17 @@ public:
   explicit
   Measurements(NameTree& nametree);
 
-  /** \brief find or insert a Measurements entry for name
+  /** \brief find or insert a Measurements entry for \p name
    */
   shared_ptr<measurements::Entry>
   get(const Name& name);
 
-  /** \brief find or insert a Measurements entry for fibEntry->getPrefix()
+  /** \brief find or insert a Measurements entry for \p fibEntry.getPrefix()
    */
   shared_ptr<measurements::Entry>
   get(const fib::Entry& fibEntry);
 
-  /** \brief find or insert a Measurements entry for pitEntry->getName()
+  /** \brief find or insert a Measurements entry for \p pitEntry.getName()
    */
   shared_ptr<measurements::Entry>
   get(const pit::Entry& pitEntry);
@@ -70,10 +97,17 @@ public:
   shared_ptr<measurements::Entry>
   getParent(const measurements::Entry& child);
 
-  /** \brief perform a longest prefix match
+  /** \brief perform a longest prefix match for \p name
    */
   shared_ptr<measurements::Entry>
-  findLongestPrefixMatch(const Name& name) const;
+  findLongestPrefixMatch(const Name& name, const measurements::EntryPredicate& pred =
+      measurements::AnyEntry()) const;
+
+  /** \brief perform a longest prefix match for \p pitEntry.getName()
+   */
+  shared_ptr<measurements::Entry>
+  findLongestPrefixMatch(const pit::Entry& pitEntry, const measurements::EntryPredicate& pred =
+      measurements::AnyEntry()) const;
 
   /** \brief perform an exact match
    */
@@ -100,24 +134,27 @@ private:
   shared_ptr<measurements::Entry>
   get(name_tree::Entry& nte);
 
+  /** \tparam K Name or shared_ptr<name_tree::Entry>
+   */
+  template<typename K>
+  shared_ptr<measurements::Entry>
+  findLongestPrefixMatchImpl(const K& key, const measurements::EntryPredicate& pred) const;
+
 private:
   NameTree& m_nameTree;
   size_t m_nItems;
-  static const time::nanoseconds s_defaultLifetime;
 };
 
-inline time::nanoseconds
-Measurements::getInitialLifetime()
+inline time::nanoseconds Measurements::getInitialLifetime()
 {
   return time::seconds(4);
 }
 
-inline size_t
-Measurements::size() const
+inline size_t Measurements::size() const
 {
   return m_nItems;
 }
 
-} // namespace nfd
+}  // namespace nfd
 
 #endif // NFD_DAEMON_TABLE_MEASUREMENTS_HPP

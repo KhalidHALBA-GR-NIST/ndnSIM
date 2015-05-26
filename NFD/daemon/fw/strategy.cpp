@@ -32,13 +32,10 @@ namespace fw {
 
 NFD_LOG_INIT("Strategy");
 
-Strategy::Strategy(Forwarder& forwarder, const Name& name)
-  : afterAddFace(forwarder.getFaceTable().onAdd)
-  , beforeRemoveFace(forwarder.getFaceTable().onRemove)
-  , m_name(name)
-  , m_forwarder(forwarder)
-  , m_measurements(m_forwarder.getMeasurements(),
-                   m_forwarder.getStrategyChoice(), this)
+Strategy::Strategy(Forwarder& forwarder, const Name& name) :
+    afterAddFace(forwarder.getFaceTable().onAdd),
+        beforeRemoveFace(forwarder.getFaceTable().onRemove), m_name(name), m_forwarder(forwarder),
+        m_measurements(m_forwarder.getMeasurements(), m_forwarder.getStrategyChoice(), *this)
 {
 }
 
@@ -46,16 +43,15 @@ Strategy::~Strategy()
 {
 }
 
-void
-Strategy::beforeSatisfyInterest(shared_ptr<pit::Entry> pitEntry,
-                                const Face& inFace, const Data& data)
+void Strategy::beforeSatisfyInterest(shared_ptr<pit::Entry> pitEntry, const Face& inFace,
+    const Data& data)
 {
-  NFD_LOG_DEBUG("beforeSatisfyInterest pitEntry=" << pitEntry->getName() <<
-    " inFace=" << inFace.getId() << " data=" << data.getName());
+  NFD_LOG_DEBUG(
+      "beforeSatisfyInterest pitEntry=" << pitEntry->getName() << " inFace=" << inFace.getId()
+          << " data=" << data.getName());
 }
 
-void
-Strategy::beforeExpirePendingInterest(shared_ptr<pit::Entry> pitEntry)
+void Strategy::beforeExpirePendingInterest(shared_ptr<pit::Entry> pitEntry)
 {
   NFD_LOG_DEBUG("beforeExpirePendingInterest pitEntry=" << pitEntry->getName());
 }
@@ -78,5 +74,5 @@ Strategy::beforeExpirePendingInterest(shared_ptr<pit::Entry> pitEntry)
 //  NFD_LOG_DEBUG("beforeRemoveFibEntry fibEntry=" << fibEntry->getPrefix());
 //}
 
-} // namespace fw
-} // namespace nfd
+}// namespace fw
+}  // namespace nfd

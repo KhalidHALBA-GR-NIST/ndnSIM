@@ -28,28 +28,24 @@
 namespace nfd {
 namespace fib {
 
-Entry::Entry(const Name& prefix)
-  : m_prefix(prefix)
+Entry::Entry(const Name& prefix) :
+    m_prefix(prefix)
 {
 }
 
-NextHopList::iterator
-Entry::findNextHop(Face& face)
+NextHopList::iterator Entry::findNextHop(Face& face)
 {
-  return std::find_if(m_nextHops.begin(), m_nextHops.end(),
-                      [&face] (const NextHop& nexthop) {
-                        return nexthop.getFace().get() == &face;
-                      });
+  return std::find_if(m_nextHops.begin(), m_nextHops.end(), [&face] (const NextHop& nexthop) {
+    return nexthop.getFace().get() == &face;
+  });
 }
 
-bool
-Entry::hasNextHop(shared_ptr<Face> face) const
+bool Entry::hasNextHop(shared_ptr<Face> face) const
 {
   return const_cast<Entry*>(this)->findNextHop(*face) != m_nextHops.end();
 }
 
-void
-Entry::addNextHop(shared_ptr<Face> face, uint64_t cost)
+void Entry::addNextHop(shared_ptr<Face> face, uint64_t cost)
 {
   auto it = this->findNextHop(*face);
   if (it == m_nextHops.end()) {
@@ -64,8 +60,7 @@ Entry::addNextHop(shared_ptr<Face> face, uint64_t cost)
   this->sortNextHops();
 }
 
-void
-Entry::removeNextHop(shared_ptr<Face> face)
+void Entry::removeNextHop(shared_ptr<Face> face)
 {
   auto it = this->findNextHop(*face);
   if (it != m_nextHops.end()) {
@@ -73,13 +68,11 @@ Entry::removeNextHop(shared_ptr<Face> face)
   }
 }
 
-void
-Entry::sortNextHops()
+void Entry::sortNextHops()
 {
   std::sort(m_nextHops.begin(), m_nextHops.end(),
-            [] (const NextHop& a, const NextHop& b) { return a.getCost() < b.getCost(); });
+      [] (const NextHop& a, const NextHop& b) {return a.getCost() < b.getCost();});
 }
 
-
-} // namespace fib
-} // namespace nfd
+}  // namespace fib
+}  // namespace nfd

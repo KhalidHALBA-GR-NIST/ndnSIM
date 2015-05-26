@@ -53,7 +53,8 @@ public:
   const Name&
   getName() const;
 
-public: // triggers
+public:
+  // triggers
   /** \brief trigger after Interest is received
    *
    *  The Interest:
@@ -75,10 +76,8 @@ public: // triggers
    *        pitEntry is passed by value to reflect this fact.
    */
   virtual void
-  afterReceiveInterest(const Face& inFace,
-                       const Interest& interest,
-                       shared_ptr<fib::Entry> fibEntry,
-                       shared_ptr<pit::Entry> pitEntry) = 0;
+  afterReceiveInterest(const Face& inFace, const Interest& interest,
+      shared_ptr<fib::Entry> fibEntry, shared_ptr<pit::Entry> pitEntry) = 0;
 
   /** \brief trigger before PIT entry is satisfied
    *
@@ -91,8 +90,7 @@ public: // triggers
    *        pitEntry is passed by value to reflect this fact.
    */
   virtual void
-  beforeSatisfyInterest(shared_ptr<pit::Entry> pitEntry,
-                        const Face& inFace, const Data& data);
+  beforeSatisfyInterest(shared_ptr<pit::Entry> pitEntry, const Face& inFace, const Data& data);
 
   /** \brief trigger before PIT entry expires
    *
@@ -109,22 +107,25 @@ public: // triggers
   virtual void
   beforeExpirePendingInterest(shared_ptr<pit::Entry> pitEntry);
 
-protected: // actions
+protected:
+  // actions
   /// send Interest to outFace
-  VIRTUAL_WITH_TESTS void
-  sendInterest(shared_ptr<pit::Entry> pitEntry,
-               shared_ptr<Face> outFace,
-               bool wantNewNonce = false);
+  VIRTUAL_WITH_TESTS
+  void
+  sendInterest(shared_ptr<pit::Entry> pitEntry, shared_ptr<Face> outFace,
+      bool wantNewNonce = false);
 
   /** \brief decide that a pending Interest cannot be forwarded
    *
    *  This shall not be called if the pending Interest has been
    *  forwarded earlier, and does not need to be resent now.
    */
-  VIRTUAL_WITH_TESTS void
+  VIRTUAL_WITH_TESTS
+  void
   rejectPendingInterest(shared_ptr<pit::Entry> pitEntry);
 
-protected: // accessors
+protected:
+  // accessors
   MeasurementsAccessor&
   getMeasurements();
 
@@ -134,7 +135,8 @@ protected: // accessors
   const FaceTable&
   getFaceTable();
 
-protected: // accessors
+protected:
+  // accessors
   signal::Signal<FaceTable, shared_ptr<Face>>& afterAddFace;
   signal::Signal<FaceTable, shared_ptr<Face>>& beforeRemoveFace;
 
@@ -156,16 +158,13 @@ Strategy::getName() const
   return m_name;
 }
 
-inline void
-Strategy::sendInterest(shared_ptr<pit::Entry> pitEntry,
-                       shared_ptr<Face> outFace,
-                       bool wantNewNonce)
+inline void Strategy::sendInterest(shared_ptr<pit::Entry> pitEntry, shared_ptr<Face> outFace,
+    bool wantNewNonce)
 {
   m_forwarder.onOutgoingInterest(pitEntry, *outFace, wantNewNonce);
 }
 
-inline void
-Strategy::rejectPendingInterest(shared_ptr<pit::Entry> pitEntry)
+inline void Strategy::rejectPendingInterest(shared_ptr<pit::Entry> pitEntry)
 {
   m_forwarder.onInterestReject(pitEntry);
 }
@@ -176,8 +175,7 @@ Strategy::getMeasurements()
   return m_measurements;
 }
 
-inline shared_ptr<Face>
-Strategy::getFace(FaceId id)
+inline shared_ptr<Face> Strategy::getFace(FaceId id)
 {
   return m_forwarder.getFace(id);
 }
@@ -188,7 +186,7 @@ Strategy::getFaceTable()
   return m_forwarder.getFaceTable();
 }
 
-} // namespace fw
-} // namespace nfd
+}  // namespace fw
+}  // namespace nfd
 
 #endif // NFD_DAEMON_FW_STRATEGY_HPP

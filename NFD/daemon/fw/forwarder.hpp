@@ -27,7 +27,7 @@
 #define NFD_DAEMON_FW_FORWARDER_HPP
 
 #include "common.hpp"
-#include "core/scheduler.hpp"
+//#include "core/scheduler.hpp"
 #include "forwarder-counters.hpp"
 #include "face-table.hpp"
 #include "table/fib.hpp"
@@ -38,12 +38,24 @@
 #include "table/dead-nonce-list.hpp"
 
 #include "ns3/ndnSIM/model/cs/ndn-content-store.hpp"
+#include <bits/shared_ptr_base.h>
+#include <boost/chrono/duration.hpp>
+#include <ndn-cxx/data.hpp>
+#include <ndn-cxx/interest.hpp>
+#include <ndn-cxx/name.hpp>
+#include <ndn-cxx/util/signal-signal.hpp>
+#include <ns3-dev/ns3/ptr.h>
+#include <cstdbool>
+#include <memory>
+#include "../face/face.hpp"
+#include "../table/name-tree.hpp"
+#include "../table/pit-entry.hpp"
 
 namespace nfd {
 
 namespace fw {
 class Strategy;
-} // namespace fw
+}  // namespace fw
 
 class NullFace;
 
@@ -62,7 +74,8 @@ public:
   const ForwarderCounters&
   getCounters() const;
 
-public: // faces
+public:
+  // faces
   FaceTable&
   getFaceTable();
 
@@ -80,7 +93,8 @@ public: // faces
   void
   addFace(shared_ptr<Face> face);
 
-public: // forwarding entrypoints and tables
+public:
+  // forwarding entrypoints and tables
   void
   onInterest(Face& face, const Interest& interest);
 
@@ -108,7 +122,8 @@ public: // forwarding entrypoints and tables
   DeadNonceList&
   getDeadNonceList();
 
-public: // allow enabling ndnSIM content store (will be removed in the future)
+public:
+  // allow enabling ndnSIM content store (will be removed in the future)
   void
   setCsFromNdnSim(ns3::Ptr<ns3::ndn::ContentStore> cs);
 
@@ -123,7 +138,7 @@ public:
    */
   signal::Signal<Forwarder, pit::Entry> beforeExpirePendingInterest;
 
-PUBLIC_WITH_TESTS_ELSE_PRIVATE: // pipelines
+  PUBLIC_WITH_TESTS_ELSE_PRIVATE:  // pipelines
   /** \brief incoming Interest pipeline
    */
   VIRTUAL_WITH_TESTS void
@@ -131,68 +146,76 @@ PUBLIC_WITH_TESTS_ELSE_PRIVATE: // pipelines
 
   /** \brief Interest loop pipeline
    */
-  VIRTUAL_WITH_TESTS void
-  onInterestLoop(Face& inFace, const Interest& interest,
-                 shared_ptr<pit::Entry> pitEntry);
+  VIRTUAL_WITH_TESTS
+  void
+  onInterestLoop(Face& inFace, const Interest& interest, shared_ptr<pit::Entry> pitEntry);
 
   /** \brief outgoing Interest pipeline
    */
-  VIRTUAL_WITH_TESTS void
-  onOutgoingInterest(shared_ptr<pit::Entry> pitEntry, Face& outFace,
-                     bool wantNewNonce = false);
+  VIRTUAL_WITH_TESTS
+  void
+  onOutgoingInterest(shared_ptr<pit::Entry> pitEntry, Face& outFace, bool wantNewNonce = false);
 
   /** \brief Interest reject pipeline
    */
-  VIRTUAL_WITH_TESTS void
+  VIRTUAL_WITH_TESTS
+  void
   onInterestReject(shared_ptr<pit::Entry> pitEntry);
 
   /** \brief Interest unsatisfied pipeline
    */
-  VIRTUAL_WITH_TESTS void
+  VIRTUAL_WITH_TESTS
+  void
   onInterestUnsatisfied(shared_ptr<pit::Entry> pitEntry);
 
   /** \brief Interest finalize pipeline
    *  \param isSatisfied whether the Interest has been satisfied
    *  \param dataFreshnessPeriod FreshnessPeriod of satisfying Data
    */
-  VIRTUAL_WITH_TESTS void
+  VIRTUAL_WITH_TESTS
+  void
   onInterestFinalize(shared_ptr<pit::Entry> pitEntry, bool isSatisfied,
-                     const time::milliseconds& dataFreshnessPeriod = time::milliseconds(-1));
+      const time::milliseconds& dataFreshnessPeriod = time::milliseconds(-1));
 
   /** \brief incoming Data pipeline
    */
-  VIRTUAL_WITH_TESTS void
+  VIRTUAL_WITH_TESTS
+  void
   onIncomingData(Face& inFace, const Data& data);
 
   /** \brief Data unsolicited pipeline
    */
-  VIRTUAL_WITH_TESTS void
+  VIRTUAL_WITH_TESTS
+  void
   onDataUnsolicited(Face& inFace, const Data& data);
 
   /** \brief outgoing Data pipeline
    */
-  VIRTUAL_WITH_TESTS void
+  VIRTUAL_WITH_TESTS
+  void
   onOutgoingData(const Data& data, Face& outFace);
 
-PROTECTED_WITH_TESTS_ELSE_PRIVATE:
+  PROTECTED_WITH_TESTS_ELSE_PRIVATE:
   VIRTUAL_WITH_TESTS void
   setUnsatisfyTimer(shared_ptr<pit::Entry> pitEntry);
 
-  VIRTUAL_WITH_TESTS void
+  VIRTUAL_WITH_TESTS
+  void
   setStragglerTimer(shared_ptr<pit::Entry> pitEntry, bool isSatisfied,
-                    const time::milliseconds& dataFreshnessPeriod = time::milliseconds(-1));
+      const time::milliseconds& dataFreshnessPeriod = time::milliseconds(-1));
 
-  VIRTUAL_WITH_TESTS void
+  VIRTUAL_WITH_TESTS
+  void
   cancelUnsatisfyAndStragglerTimer(shared_ptr<pit::Entry> pitEntry);
 
   /** \brief insert Nonce to Dead Nonce List if necessary
    *  \param upstream if null, insert Nonces from all OutRecords;
    *                  if not null, insert Nonce only on the OutRecord of this face
    */
-  VIRTUAL_WITH_TESTS void
+  VIRTUAL_WITH_TESTS
+  void
   insertDeadNonceList(pit::Entry& pitEntry, bool isSatisfied,
-                      const time::milliseconds& dataFreshnessPeriod,
-                      Face* upstream);
+      const time::milliseconds& dataFreshnessPeriod, Face* upstream);
 
   /// call trigger (method) on the effective strategy of pitEntry
 #ifdef WITH_TESTS
@@ -210,13 +233,13 @@ private:
   FaceTable m_faceTable;
 
   // tables
-  NameTree       m_nameTree;
-  Fib            m_fib;
-  Pit            m_pit;
-  Cs             m_cs;
-  Measurements   m_measurements;
+  NameTree m_nameTree;
+  Fib m_fib;
+  Pit m_pit;
+  Cs m_cs;
+  Measurements m_measurements;
   StrategyChoice m_strategyChoice;
-  DeadNonceList  m_deadNonceList;
+  DeadNonceList m_deadNonceList;
   shared_ptr<NullFace> m_csFace;
 
   ns3::Ptr<ns3::ndn::ContentStore> m_csFromNdnSim;
@@ -239,26 +262,22 @@ Forwarder::getFaceTable()
   return m_faceTable;
 }
 
-inline shared_ptr<Face>
-Forwarder::getFace(FaceId id) const
+inline shared_ptr<Face> Forwarder::getFace(FaceId id) const
 {
   return m_faceTable.get(id);
 }
 
-inline void
-Forwarder::addFace(shared_ptr<Face> face)
+inline void Forwarder::addFace(shared_ptr<Face> face)
 {
   m_faceTable.add(face);
 }
 
-inline void
-Forwarder::onInterest(Face& face, const Interest& interest)
+inline void Forwarder::onInterest(Face& face, const Interest& interest)
 {
   this->onIncomingInterest(face, interest);
 }
 
-inline void
-Forwarder::onData(Face& face, const Data& data)
+inline void Forwarder::onData(Face& face, const Data& data)
 {
   this->onIncomingData(face, data);
 }
@@ -305,8 +324,7 @@ Forwarder::getDeadNonceList()
   return m_deadNonceList;
 }
 
-inline void
-Forwarder::setCsFromNdnSim(ns3::Ptr<ns3::ndn::ContentStore> cs)
+inline void Forwarder::setCsFromNdnSim(ns3::Ptr<ns3::ndn::ContentStore> cs)
 {
   m_csFromNdnSim = cs;
 }
@@ -316,14 +334,13 @@ inline void
 Forwarder::dispatchToStrategy(shared_ptr<pit::Entry> pitEntry, function<void(fw::Strategy*)> trigger)
 #else
 template<class Function>
-inline void
-Forwarder::dispatchToStrategy(shared_ptr<pit::Entry> pitEntry, Function trigger)
+inline void Forwarder::dispatchToStrategy(shared_ptr<pit::Entry> pitEntry, Function trigger)
 #endif
 {
   fw::Strategy& strategy = m_strategyChoice.findEffectiveStrategy(*pitEntry);
   trigger(&strategy);
 }
 
-} // namespace nfd
+}  // namespace nfd
 
 #endif // NFD_DAEMON_FW_FORWARDER_HPP

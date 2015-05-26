@@ -23,15 +23,27 @@
 #include <boost/algorithm/string/detail/classification.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <boost/assert.hpp>
+#include <ndn-cxx/interest.hpp>
+#include <ndn-cxx/name.hpp>
+#include <cstdbool>
+#include <memory>
+#include <vector>
+#include "../table/measurements-entry.hpp"
 
 namespace nfd {
 namespace fw {
 
-NFD_LOG_INIT("StrategyHelper");
+NFD_LOG_INIT ("StrategyHelper");
+
+StrategyHelper::StrategyHelper() :
+    probingCounter(1)
+{
+}
 
 std::map<std::string, std::string> StrategyHelper::getParameterMap(std::string parameters)
 {
-  NFD_LOG_INFO("Parsing parameters!");
+  NFD_LOG_TRACE("Parsing parameters!");
 
   std::map < std::string, std::string > outputMap;
 
@@ -52,6 +64,45 @@ std::map<std::string, std::string> StrategyHelper::getParameterMap(std::string p
   }
 
   return outputMap;
+}
+
+bool StrategyHelper::probingDue()
+{
+  if (probingCounter >= 10) {
+    probingCounter = 1;
+    return true;
+  }
+  else {
+    probingCounter++;
+    return false;
+  }
+}
+
+std::tuple<Name, shared_ptr<MeasurementInfo>> StrategyHelper::findPrefixMeasurements(
+    const Interest& interest, const MeasurementsAccessor& measurements)
+{
+  shared_ptr < measurements::Entry > me = measurements.findLongestPrefixMatch(interest.getName());
+  if (me == nullptr) {
+    return std::forward_as_tuple(Name(), nullptr);
+  }
+  shared_ptr < MeasurementInfo > mi = me->getStrategyInfo<MeasurementInfo>();
+  return std::forward_as_tuple(me->getName(), mi);
+}
+
+shared_ptr<MeasurementInfo> StrategyHelper::addPrefixMeasurements(const Interest& interest,
+    MeasurementsAccessor& measurements)
+{
+  shared_ptr < measurements::Entry > me;
+  if (interest.getName().size() >= 1) {
+    // Save info one step up.
+    me = measurements.get(interest.getName().getPrefix(-1));
+  }
+  // parent of Interest Name is not in this strategy, or Interest Name is empty
+  if (me == nullptr) {
+    me = measurements.get(interest.getName());
+  }
+
+  return me->getOrCreateStrategyInfo<MeasurementInfo>();
 }
 
 }  // namespace nfd
