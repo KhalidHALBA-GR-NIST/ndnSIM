@@ -29,6 +29,7 @@
 #include "ncc-strategy.hpp"
 #include "best-route-strategy2.hpp"
 #include "broadcast-newnonce-strategy.hpp"
+#include "lowest-cost-strategy.hpp"
 
 namespace nfd {
 namespace fw {
@@ -55,6 +56,7 @@ void installStrategies(Forwarder& forwarder)
   installStrategy<NccStrategy>(forwarder);
   installStrategy<BestRouteStrategy2>(forwarder);
   installStrategy<BroadcastNewNonceStrategy>(forwarder);
+  installStrategy<LowestCostStrategy>(forwarder);
 }
 
 }  // namespace fw

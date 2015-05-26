@@ -390,7 +390,9 @@ void Forwarder::setUnsatisfyTimer(shared_ptr<pit::Entry> pitEntry)
 void Forwarder::setStragglerTimer(shared_ptr<pit::Entry> pitEntry, bool isSatisfied,
     const time::milliseconds& dataFreshnessPeriod)
 {
-  time::nanoseconds stragglerTime = time::milliseconds(100);
+
+  // Increase straggler timer to default interest lifetime!
+  time::nanoseconds stragglerTime = time::milliseconds(2000);
 
   scheduler::cancel(pitEntry->m_stragglerTimer);
   pitEntry->m_stragglerTimer = scheduler::schedule(stragglerTime,

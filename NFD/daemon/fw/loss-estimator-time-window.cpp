@@ -60,8 +60,11 @@ void LossEstimatorTimeWindow::addSatisfiedInterest(const std::string& name)
     }
   }
   if (found == false) {
-    NFD_LOG_DEBUG("Interest " << name << " not found! Should not happen!\n");
-    throw std::runtime_error("Interest not found! Should not happen!\n");
+    NFD_LOG_DEBUG(
+        "Interest " << name
+            << " not found! Data packet returned after interest lifetime exceeded!\n");
+    // Still add the data packet?
+    lossMap.insert(std::make_pair(time::steady_clock::now(), PacketType::FUTURESATISFIED));
   }
 }
 

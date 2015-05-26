@@ -60,8 +60,6 @@ public:
 
   /*
    * Adds a satisfied interest packet.
-   *
-   * \throws runtime-exception if no matching data packet exists!
    */
   void addSatisfiedInterest(const std::string& name)
   DECL_OVERRIDE;

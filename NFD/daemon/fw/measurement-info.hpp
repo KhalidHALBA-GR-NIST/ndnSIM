@@ -3,6 +3,9 @@
 
 #include "strategy-info.hpp"
 #include "strategy-requirements.hpp"
+#include <unordered_map>
+#include "../face/face.hpp"
+#include "interface-estimation.hpp"
 
 namespace nfd {
 namespace fw {
@@ -24,6 +27,7 @@ public:
   }
 
 public:
+  std::unordered_map<FaceId, InterfaceEstimation> faceInfoMap;
   StrategyRequirements req;
   int currentWorkingFace;
 };
