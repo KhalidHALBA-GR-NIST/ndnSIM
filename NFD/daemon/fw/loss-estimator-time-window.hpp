@@ -1,3 +1,22 @@
+/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+/*
+ * Copyright (c) 2015 Klaus Schneider, University of Bamberg, Germany
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation;
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * Author: Klaus Schneider <klaus.schneider@uni-bamberg.de>
+ */
 #ifndef NFD_DAEMON_FW_LOSS_ESTIMATOR_TIME_WINDOW_HPP
 #define NFD_DAEMON_FW_LOSS_ESTIMATOR_TIME_WINDOW_HPP
 
@@ -19,28 +38,38 @@ public:
 
   /**
    * Constructs the Loss Estimator with the given sliding window time and interest lifetime.
-   * Throws a runtime exception if the interest lifetime is larger than the loss window!
+   *
+   *
+   * \param interestLifetime The time after which unanswered interersts are considered lost
+   * \param lossWindow the windows size for the loss calculation.
+   * Must be larger than the interest lifetime.
+   *
+   * \throws runtime-exception if the interest lifetime is larger than the loss window!
+   *
    */
   LossEstimatorTimeWindow(time::steady_clock::duration interestLifetime,
       time::steady_clock::duration lossWindow);
 
   /*
    * Adds an interest to the unknownMap.
-   * Throws a runtime exception if the name already exists!
+   *
+   * \throws runtime-exception if the name already exists!
    */
   void addSentInterest(const std::string name)
   DECL_OVERRIDE;
 
   /*
    * Adds a satisfied interest packet.
-   * Throws a runtime exception if no matching data packet exists!
+   *
+   * \throws runtime-exception if no matching data packet exists!
    */
   void addSatisfiedInterest(const std::string name)
   DECL_OVERRIDE;
 
   /*
    * Returns the loss percentage.
-   * Returns 0 if the lossMap is empty or contains only FUTURESATISFIED packets.
+   *
+   * \return 0 if the lossMap is empty or contains only FUTURESATISFIED packets.
    */
   double getLossPercentage()
   DECL_OVERRIDE;
