@@ -42,11 +42,8 @@ void LowestCostStrategy::afterReceiveInterest(const Face& inFace, const Interest
   nfd::MeasurementsAccessor& ma = this->getMeasurements();
   std::tie(currentPrefix, measurementInfo) = StrategyHelper::findPrefixMeasurements(interest, ma);
 
-  // Prefix found
-  if (measurementInfo != nullptr) {
-    // Do nothing
-  }
-  else {
+  // Prefix info not found
+  if (measurementInfo == nullptr) {
     // Create new prefix
     nfd::MeasurementsAccessor & ma = this->getMeasurements();
     measurementInfo = StrategyHelper::addPrefixMeasurements(interest, ma);

@@ -101,7 +101,7 @@ private:
    * The map for interests inside the interest lifetime.
    * Their status is undecided depending on wheter a data packet will return.
    */
-  std::map<const time::steady_clock::TimePoint, const std::string> unknownMap;
+  std::map<const std::string, const time::steady_clock::TimePoint> unknownMap;
 
   /**
    * The map for the final loss calculation.

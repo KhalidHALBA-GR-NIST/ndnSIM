@@ -36,12 +36,13 @@ LossEstimatorTimeWindow::LossEstimatorTimeWindow(time::steady_clock::duration in
 
 void LossEstimatorTimeWindow::addSentInterest(const std::string& name)
 {
+  NFD_LOG_TRACE("Add sent interest: " << name);
   const time::steady_clock::TimePoint now = time::steady_clock::now();
 
-  auto n = unknownMap.insert(std::make_pair(now, name));
+  auto n = unknownMap.insert(std::make_pair(name, now));
   if (n.second == false) {
-    NFD_LOG_DEBUG("Duplicate insertion: " << name << " Should not happen!\n");
-    throw std::runtime_error("Duplicate insertion!");
+    NFD_LOG_WARN("Duplicate insertion: " << name << " Should not happen!\n");
+    throw std::runtime_error("Duplicate insertion of sent interest!");
   }
 
 }
@@ -52,10 +53,10 @@ void LossEstimatorTimeWindow::addSatisfiedInterest(const std::string& name)
 
   for (auto n : unknownMap) {
     // Add new data
-    if (n.second == name) {
+    if (n.first == name) {
       NFD_LOG_TRACE("Adding found interest!: " << name);
       found = true;
-      lossMap.insert(std::make_pair(n.first, PacketType::FUTURESATISFIED));
+      lossMap.insert(std::make_pair(n.second, PacketType::FUTURESATISFIED));
       unknownMap.erase(n.first);
     }
   }
@@ -84,8 +85,8 @@ double LossEstimatorTimeWindow::getLossPercentage()
 
   // Add lost interests
   for (auto n : unknownMap) {
-    if (now > n.first + m_interestLifetime) {
-      lossMap.insert(std::make_pair(n.first, PacketType::LOST));
+    if (now > n.second + m_interestLifetime) {
+      lossMap.insert(std::make_pair(n.second, PacketType::LOST));
       unknownMap.erase(n.first);
     }
   }
