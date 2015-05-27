@@ -1,20 +1,39 @@
-ndnSIM 2.0
+A custom strategy layer for NFD
 ==========
 
-ndnSIM 2.0 is a new release of [NS-3 based Named Data Networking (NDN)
-simulator](http://ndnsim.net/1.0/) that went through extensive refactoring and rewriting.
-The key new features of the new version:
+This is a custom version of NFD integrated into ndnSIM 2.0 with following additions:
 
-- ndnSIM no longer re-implements basic NDN primitives and directly uses implementation from
-  [ndn-cxx library (NDN C++ library with eXperimental eXtensions)](http://named-data.net/doc/ndn-cxx/)
+- Ability to use strategy-specific parameters
+- Additional forwarding strategies
+- Additional interface estimator classes
 
-- All NDN forwarding and management is implemented directly using source code of
-  [Named Data Networking Forwarding Daemon (NFD)](http://named-data.net/doc/NFD/)
+The source code is currently still in alpha stage and for experimentation purposes only.
 
-- Packet format changed to [NDN-TLV](http://named-data.net/doc/ndn-tlv/)
+## Installation Procedure
 
-[ndnSIM 2.0 documentation](http://ndnsim.net)
----------------------------------------------
+The installation procedure is straight-forward and similar to the one of [ndnSIM](http://ndnsim.net/2.0/getting-started.html):
 
-For more information, including downloading and compilation instruction, please refer to
-http://ndnsim.net or documentation in `docs/` folder.
+```bash
+		# Download sources from github
+		mkdir ndnSIM
+		cd ndnSIM
+		git clone https://github.com/named-data/ndn-cxx.git ndn-cxx
+		git clone https://github.com/cawka/ns-3-dev-ndnSIM.git ns-3
+		git clone https://github.com/cawka/pybindgen.git pybindgen
+		git clone https://github.com/schneiderklaus/ndnSIM ns-3/src/ndnSIM
+		
+		# Compile and install the ndn-cxx library
+		cd ndnSIM/ndn-cxx
+		./waf configure
+		./waf
+		sudo ./waf install
+
+		# Compile NS-3 with ndnSIM module
+		cd <ns-3-folder>
+		./waf configure --disable-python --enable-examples -d debug
+		./waf
+```
+
+## Tutorial
+
+Coming soon!
