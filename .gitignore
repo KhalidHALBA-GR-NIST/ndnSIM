@@ -10,3 +10,5 @@ helper
 tests
 docs/html
 .settings
+apps
+utils

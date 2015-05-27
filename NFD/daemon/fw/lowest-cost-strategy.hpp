@@ -73,11 +73,11 @@ private:
       const fib::NextHopList& nexthops, shared_ptr<pit::Entry> pitEntry);
 
   /**
-   * Returns the face that satisfies all requirements which has the lowest cost.
-   * Runs getLowestTypeFace() if no face satisfies all requirements.
+   * Returns the face with the lowest cost that satisfies all requirements.
+   * Runs getLowestTypeFace() with type = priorityType if no face satisfies all requirements.
    */
   shared_ptr<Face> getOutputFace(const fib::NextHopList& nexthops, shared_ptr<pit::Entry> pitEntry,
-      StrategyRequirements &paramPtr);
+      StrategyRequirements &paramPtr, FaceId currentWorkingFace);
 
   /**
    * Returns the face with the lowest cost that satisfies exactly one requirement.
@@ -85,16 +85,21 @@ private:
    * Returns the face with the best value (e.g., lowest delay if type == DELAY) if no face satisfies the requirement.
    */
   shared_ptr<Face> getLowestTypeFace(const fib::NextHopList& nexthops,
-      shared_ptr<pit::Entry> pitEntry, RequirementType type, bool isUpwardAttribute = false);
+      shared_ptr<pit::Entry> pitEntry, RequirementType type, StrategyRequirements& requirements,
+      FaceId currentWorkingFace, bool isUpwardAttribute = false);
 
 private:
 
+  // 5% Hysteresis
+  const double HYSTERESIS_PERCENTAGE = 0.05;
+
   StrategyHelper helper;
-  StrategyRequirements requirements;
   std::unordered_map<FaceId, InterfaceEstimation> faceInfoTable;
   StrategyChoice& ownStrategyChoice;
+
+  // The type to use when not all requirements can be met.
+  // Defaults to "DELAY"
   RequirementType priorityType;
-  int currentWorkingFace;
 
 };
 

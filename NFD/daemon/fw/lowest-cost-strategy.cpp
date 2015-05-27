@@ -28,17 +28,15 @@ NFD_LOG_INIT("LowestCostStrategy")
 
 const Name LowestCostStrategy::STRATEGY_NAME("ndn:/localhost/nfd/strategy/lowest-cost/%FD%01/");
 
-LowestCostStrategy::LowestCostStrategy(Forwarder& forwarder, const Name& name) :  // Default delay: 100 ms
-    Strategy(forwarder, name), requirements(StrategyRequirements()),
-        ownStrategyChoice(forwarder.getStrategyChoice()), priorityType(RequirementType::DELAY),
-        currentWorkingFace(-1)
+LowestCostStrategy::LowestCostStrategy(Forwarder& forwarder, const Name& name) :
+    Strategy(forwarder, name), ownStrategyChoice(forwarder.getStrategyChoice()),
+        priorityType(RequirementType::DELAY)
 {
 }
 
 void LowestCostStrategy::afterReceiveInterest(const Face& inFace, const Interest& interest,
     shared_ptr<fib::Entry> fibEntry, shared_ptr<pit::Entry> pitEntry)
 {
-
   Name currentPrefix;
   shared_ptr < MeasurementInfo > measurementInfo;
   nfd::MeasurementsAccessor& ma = this->getMeasurements();
@@ -46,16 +44,15 @@ void LowestCostStrategy::afterReceiveInterest(const Face& inFace, const Interest
 
   // Prefix found
   if (measurementInfo != nullptr) {
-    currentWorkingFace = measurementInfo->currentWorkingFace;
-    requirements = measurementInfo->req;
+    // Do nothing
   }
   else {
     // Create new prefix
     nfd::MeasurementsAccessor & ma = this->getMeasurements();
     measurementInfo = StrategyHelper::addPrefixMeasurements(interest, ma);
     NFD_LOG_WARN("New prefix " << interest.getName() << " from " << inFace.getId());
-    requirements.parseParameters(ownStrategyChoice.findEffectiveParameters(interest.getName()));
-    measurementInfo->req = requirements;
+    measurementInfo->req.parseParameters(
+        ownStrategyChoice.findEffectiveParameters(interest.getName()));
   }
 
   if (pitEntry->hasUnexpiredOutRecords()) {
@@ -63,7 +60,8 @@ void LowestCostStrategy::afterReceiveInterest(const Face& inFace, const Interest
     return;
   }
 
-  shared_ptr < Face > outFace = getOutputFace(fibEntry->getNextHops(), pitEntry, requirements);
+  shared_ptr < Face > outFace = getOutputFace(fibEntry->getNextHops(), pitEntry,
+      measurementInfo->req, measurementInfo->currentWorkingFace);
 
   if (outFace == NULL) {
     NFD_LOG_WARN("No face available!\n");
@@ -75,18 +73,27 @@ void LowestCostStrategy::afterReceiveInterest(const Face& inFace, const Interest
       probeInterests(outFace, interest, fibEntry->getNextHops(), pitEntry);
     }
 
-    if (outFace->getId() != currentWorkingFace) {
-      NFD_LOG_TRACE("New current working face: " << currentWorkingFace);
-      currentWorkingFace = outFace->getId();
+    if (outFace->getId() != measurementInfo->currentWorkingFace) {
+      NFD_LOG_TRACE(
+          "New current working face from " << measurementInfo->currentWorkingFace << " to "
+              << outFace->getId());
       measurementInfo->currentWorkingFace = outFace->getId();
     }
+
+    InterfaceEstimation& faceInfo = faceInfoTable[outFace->getId()];
+    NFD_LOG_TRACE(
+        "Face: " << outFace->getId() << " - bw: "
+            << faceInfo.getCurrentValue(RequirementType::BANDWIDTH) << ", delay: "
+            << faceInfo.getCurrentValue(RequirementType::DELAY) << "ms, loss: "
+            << faceInfo.getCurrentValue(RequirementType::LOSS));
+
     faceInfoTable[outFace->getId()].addSentInterest(interest.getName().toUri());
     this->sendInterest(pitEntry, outFace);
   }
 }
 
 shared_ptr<Face> LowestCostStrategy::getOutputFace(const fib::NextHopList& nexthops,
-    shared_ptr<pit::Entry> pitEntry, StrategyRequirements &requirements)
+    shared_ptr<pit::Entry> pitEntry, StrategyRequirements &requirements, FaceId currentWorkingFace)
 {
   shared_ptr < Face > outFace = NULL;
 
@@ -103,8 +110,8 @@ shared_ptr<Face> LowestCostStrategy::getOutputFace(const fib::NextHopList& nexth
         double delayLimit = requirements.getLimit(RequirementType::DELAY);
         double lossLimit = requirements.getLimit(RequirementType::LOSS);
         if (!isWorkingFace) {
-          delayLimit /= 1.2;
-          lossLimit /= 1.2;
+          delayLimit /= (1.0 + HYSTERESIS_PERCENTAGE);
+          lossLimit /= (1.0 + HYSTERESIS_PERCENTAGE);
         }
         if (currentDelay < delayLimit && currentLoss < lossLimit) {
           outFace = n.getFace();
@@ -113,30 +120,41 @@ shared_ptr<Face> LowestCostStrategy::getOutputFace(const fib::NextHopList& nexth
       }
     }
     if (outFace == NULL) {
-      // Not all requirements could be met.
-      outFace = getLowestTypeFace(nexthops, pitEntry, priorityType);
+      // Not all requirements could be met. use priority type.
+      outFace = getLowestTypeFace(nexthops, pitEntry, priorityType, requirements,
+          currentWorkingFace);
     }
   }
   else if (requirements.contains(RequirementType::DELAY)) {
-    outFace = getLowestTypeFace(nexthops, pitEntry, RequirementType::DELAY);
+    outFace = getLowestTypeFace(nexthops, pitEntry, RequirementType::DELAY, requirements,
+        currentWorkingFace);
   }
   else if (requirements.contains(RequirementType::LOSS)) {
-    outFace = getLowestTypeFace(nexthops, pitEntry, RequirementType::LOSS);
+    outFace = getLowestTypeFace(nexthops, pitEntry, RequirementType::LOSS, requirements,
+        currentWorkingFace);
   }
   else if (requirements.contains(RequirementType::BANDWIDTH)) {
-    outFace = getLowestTypeFace(nexthops, pitEntry, RequirementType::BANDWIDTH, true);
+    outFace = getLowestTypeFace(nexthops, pitEntry, RequirementType::BANDWIDTH, requirements, true);
   }
   else {
-    NFD_LOG_WARN("Should not be reached!");
+    // No parameter set. Getting lowest cost face.
+    outFace = getLowestTypeFace(nexthops, pitEntry, RequirementType::COST, requirements,
+        currentWorkingFace);
   }
 
   return outFace;
 }
 
 shared_ptr<Face> LowestCostStrategy::getLowestTypeFace(const fib::NextHopList& nexthops,
-    shared_ptr<pit::Entry> pitEntry, RequirementType type, bool isUpwardAttribute)
+    shared_ptr<pit::Entry> pitEntry, RequirementType type, StrategyRequirements &requirements,
+    FaceId currentWorkingFace, bool isUpwardAttribute)
 {
   shared_ptr < Face > outFace = NULL;
+
+  // Returning lowest cost face.
+  if (type == RequirementType::COST) {
+    return nexthops.front().getFace();
+  }
 
   for (auto n : nexthops) {
     bool isWorkingFace = (n.getFace()->getId() == currentWorkingFace);
@@ -144,10 +162,10 @@ shared_ptr<Face> LowestCostStrategy::getLowestTypeFace(const fib::NextHopList& n
     currentLimit = requirements.getLimit(type);
     if (!isWorkingFace) {
       if (StrategyRequirements::isUpwardAttribute(type)) {
-        currentLimit *= 1.2;
+        currentLimit *= (1.0 + HYSTERESIS_PERCENTAGE);
       }
       else {
-        currentLimit /= 1.2;
+        currentLimit /= (1.0 + HYSTERESIS_PERCENTAGE);
       }
     }
     double currentValue = faceInfoTable[n.getFace()->getId()].getCurrentValue(type);
@@ -193,7 +211,6 @@ void LowestCostStrategy::probeInterests(const shared_ptr<Face> outFace, const In
 {
   for (auto n : nexthops) {
     if (n.getFace() != outFace) {
-      NFD_LOG_TRACE("Probing face: " << n.getFace()->getId());
       faceInfoTable[n.getFace()->getId()].addSentInterest(interest.getName().toUri());
       this->sendInterest(pitEntry, n.getFace(), true);
     }
