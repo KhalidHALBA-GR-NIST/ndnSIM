@@ -44,7 +44,7 @@ An example scenario is included in "examples/multipath-example.cc" together with
 	ln -s ../src/ndnSIM/examples/multipath-example.cc scratch/multipath-example.cc
 
 	# Optinal: Enable logging
-	export NS_LOG=nfd.LowestCostStrategy:debug
+	export NS_LOG=nfd.LowestCostStrategy
 	
 	# Run 
 	./waf --run multipath-example
