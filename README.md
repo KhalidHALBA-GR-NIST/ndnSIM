@@ -34,6 +34,19 @@ The installation procedure is straight-forward and similar to the one of [ndnSIM
 	./waf
 ```
 
-## Tutorial
+## Example Scenario
 
-Coming soon!
+An example scenario is included in "examples/multipath-example.cc" together with its topology "examples/topologies/topo-multipath.txt"
+
+```bash
+	# Link example scenario to scratch folder
+	cd <ns-3-folder>
+	ln -s ../src/ndnSIM/examples/multipath-example.cc scratch/multipath-example.cc
+
+	# Optinal: Enable logging
+	export NS_LOG=nfd.LowestCostStrategy:debug
+	
+	# Run 
+	./waf --run multipath-example
+
+```

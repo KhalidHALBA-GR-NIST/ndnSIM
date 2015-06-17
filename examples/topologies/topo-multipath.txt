@@ -1,0 +1,35 @@
+# topo-multipath.txt
+
+# any empty lines and lines starting with '#' symbol is ignored
+#
+# The file should contain exactly two sections: router and link, each starting with the corresponding keyword
+#
+# router section defines topology nodes and their relative positions (e.g., to use in visualizer)
+router
+
+# each line in this section represents one router and should have the following data
+# node  comment     yPos    xPos
+client    NA          2       1
+router1   NA          1       2
+router2   NA          2       2
+router3   NA		  3 	  2
+backbone  NA          2       3
+server    NA          2       4
+# Note that `node` can be any string. It is possible to access to the node by name using Names::Find, see examples.
+
+# link section defines point-to-point links between nodes and characteristics of these links
+link
+
+# Each line should be in the following format (only first two are required, the rest can be omitted)
+# srcNode   dstNode     bandwidth   metric  delay   queue
+# bandwidth: link bandwidth
+# metric: routing metric // Set real routing metrics inside simulation file! 
+# delay:  link delay
+# queue:  MaxPackets for transmission queue on the link (both directions)
+client      router1       20Mbps	150		50ms	50 
+client      router2       20Mbps	100 	150ms	50
+client 		router3		  20Mbps	50 		250ms	50 
+router1     backbone      100Mbps	100		10ms   	50
+router2     backbone      100Mbps	100		10ms	50
+router3 	backbone	  100Mbps	100		10ms   	50
+backbone    server        100Mbps	100 	10ms   	50
