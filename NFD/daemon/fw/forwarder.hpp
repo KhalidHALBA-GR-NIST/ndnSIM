@@ -44,7 +44,6 @@
 #include <ndn-cxx/interest.hpp>
 #include <ndn-cxx/name.hpp>
 #include <ndn-cxx/util/signal-signal.hpp>
-#include <ns3-dev/ns3/ptr.h>
 #include <cstdbool>
 #include <memory>
 #include "../face/face.hpp"

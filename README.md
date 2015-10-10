@@ -30,6 +30,7 @@ The installation procedure is straight-forward and similar to the one of [ndnSIM
 
 	# Compile NS-3 with the ndnSIM module
 	cd <ns-3-folder>
+	git checkout ns-3.21-ndnSIM-2.0
 	./waf configure --disable-python --enable-examples -d debug
 	./waf
 ```
