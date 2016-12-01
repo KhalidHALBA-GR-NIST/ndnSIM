@@ -23,3 +23,22 @@ version:
 
 For more information, including downloading and compilation instruction, please refer to
 http://ndnsim.net or documentation in `docs/` folder.
+
+# Installation Procedure
+
+The installation procedure is straight-forward and similar to the one of [ndnSIM](http://ndnsim.net/2.1/getting-started.html):
+
+```bash
+  # Download sources from github
+  mkdir ndnSIM
+  cd ndnSIM
+  git clone https://github.com/schneiderklaus/ns-3-dev.git ns-3
+  git clone --recursive https://github.com/schneiderklaus/ndnSIM.git ns-3/src/ndnSIM
+
+  # Compile and install 
+  cd <ns-3-folder>
+  make configure 
+  make
+
+```
+
