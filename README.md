@@ -33,7 +33,7 @@ The installation procedure is straight-forward and similar to the one of [ndnSIM
   mkdir ndnSIM
   cd ndnSIM
   git clone https://github.com/schneiderklaus/ns-3-dev.git ns-3
-  git clone --recursive https://github.com/schneiderklaus/ndnSIM.git ns-3/src/ndnSIM
+  git clone -b pcon --recursive https://github.com/schneiderklaus/ndnSIM.git ns-3/src/ndnSIM
 
   # Compile and install 
   cd <ns-3-folder>
