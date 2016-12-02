@@ -24,20 +24,20 @@
 #include <ndn-cxx/data.hpp>
 
 #include "ndn-header.hpp"
+#include "../utils/ndn-ns3-ns3-cc-tag.hpp"
 #include "../utils/ndn-ns3-packet-tag.hpp"
 
 namespace ns3 {
 namespace ndn {
 
 template<class T>
-std::shared_ptr<const T>
-Convert::FromPacket(Ptr<Packet> packet)
+std::shared_ptr<const T> Convert::FromPacket(Ptr<Packet> packet)
 {
   PacketHeader<T> header;
   packet->RemoveHeader(header);
 
   auto pkt = header.getPacket();
-  pkt->setTag(make_shared<Ns3PacketTag>(packet));
+  pkt->setTag(make_shared < Ns3PacketTag > (packet));
 
   return pkt;
 }
@@ -49,8 +49,7 @@ template std::shared_ptr<const Data>
 Convert::FromPacket<Data>(Ptr<Packet> packet);
 
 template<class T>
-Ptr<Packet>
-Convert::ToPacket(const T& pkt)
+Ptr<Packet> Convert::ToPacket(const T& pkt)
 {
   PacketHeader<T> header(pkt);
 
@@ -64,6 +63,19 @@ Convert::ToPacket(const T& pkt)
     packet = Create<Packet>();
   }
 
+  shared_ptr<::ndn::CongestionTag> tag2 = pkt.template getTag<::ndn::CongestionTag>();
+
+  if (tag2 != nullptr) {
+    Ns3CCTag ns3cctag = Ns3CCTag(tag2->getNackType(), tag2->getCongMark(), tag2->getHighCongMark(),
+        tag2->getHighCongMarkLocal());
+    ns3cctag.setNackType(tag2->getNackType());
+    ns3cctag.setCongMark(tag2->getCongMark());
+    ns3cctag.setHighCongMark(tag2->getHighCongMark());
+    ns3cctag.setHighCongMarkLocal(tag2->getHighCongMarkLocal());
+
+    packet->ReplacePacketTag(ns3cctag);
+  }
+
   packet->AddHeader(header);
   return packet;
 }
@@ -74,8 +86,7 @@ Convert::ToPacket<Interest>(const Interest& packet);
 template Ptr<Packet>
 Convert::ToPacket<Data>(const Data& packet);
 
-uint32_t
-Convert::getPacketType(Ptr<const Packet> packet)
+uint32_t Convert::getPacketType(Ptr<const Packet> packet)
 {
   uint8_t type;
   uint32_t nRead = packet->CopyData(&type, 1);
