@@ -24,7 +24,7 @@
 #include <ndn-cxx/data.hpp>
 
 #include "ndn-header.hpp"
-#include "../utils/ndn-ns3-ns3-cc-tag.hpp"
+#include "../utils/ndn-ns3-cc-tag.hpp"
 #include "../utils/ndn-ns3-packet-tag.hpp"
 
 namespace ns3 {

@@ -18,7 +18,7 @@
  * Author: Klaus Schneider <klaus@cs.arizona.edu>
  */
 
-#include "ndn-ns3-ns3-cc-tag.hpp"
+#include "ndn-ns3-cc-tag.hpp"
 
 namespace ns3 {
 namespace ndn {

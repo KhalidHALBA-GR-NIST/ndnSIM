@@ -22,6 +22,11 @@
 #define NDN_NS3_CC_TAG_H
 
 #include <ns3/tag.h>
+#include "../../network/model/tag.h"
+
+namespace ns3 {
+class TypeId;
+} /* namespace ns3 */
 
 namespace ns3 {
 namespace ndn {
@@ -45,18 +50,13 @@ public:
   }
   ;
 
-  Ns3CCTag(int8_t nackType, bool congMark, bool highCongMark, bool highCongMarkLocal)
+  Ns3CCTag(int8_t nackType, int8_t congMark, bool highCongMark, bool highCongMarkLocal)
       : m_nackType(nackType), m_congMark(congMark), m_highCongMark(highCongMark), m_highCongMarkLocal(
           highCongMarkLocal)
   {
   }
   ;
 
-  /**
-   * @brief Default constructor
-   */
-//  CCTag(int size)
-//    : m_queuesize(size){};
   /**
    * @brief Destructor
    */
@@ -75,7 +75,7 @@ public:
   /**
    * @brief Get value of queue metric
    */
-  int getNackType() const
+  int8_t getNackType() const
   {
     return m_nackType;
   }
@@ -126,7 +126,7 @@ public:
 //  Look into .cpp file.
   virtual void
   Serialize(TagBuffer i) const;
-
+ 
   virtual void
   Deserialize(TagBuffer i);
 
@@ -135,8 +135,8 @@ public:
 
 private:
   int8_t m_nackType;
-
   int8_t m_congMark;
+  
   bool m_highCongMark;
   bool m_highCongMarkLocal;
 
