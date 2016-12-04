@@ -20,7 +20,7 @@ The installation procedure is straight forward and similar to the one of [ndnSIM
 
 ## Running Experiments
 
-The repository contains the scenarios from section 4.1 to section 4.4 of the paper [A Practical Congestion Control Scheme for Named Data Networking](http://conferences2.sigcomm.org/acm-icn/2016/slides/Session1/schneider.pdf). You can run them as follows:
+The repository contains the scenarios from section 4.1 to section 4.4 of the paper [A Practical Congestion Control Scheme for Named Data Networking](http://conferences2.sigcomm.org/acm-icn/2016/proceedings/p21-schneider.pdf). You can run them as follows:
 
 ```bash
   # Switch to Ns3 folder
