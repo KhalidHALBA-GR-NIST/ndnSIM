@@ -20,16 +20,16 @@
 #ifndef NDNSIM_HELPER_NDN_STRATEGY_CHOICE_HELPER_HPP
 #define NDNSIM_HELPER_NDN_STRATEGY_CHOICE_HELPER_HPP
 
-#include "ns3/ndnSIM/model/ndn-common.hpp"
+#include "../model/ndn-common.hpp"
 
 #include "ns3/node.h"
 #include "ns3/ptr.h"
 #include "ns3/node-container.h"
 
-#include "ns3/ndnSIM/model/ndn-l3-protocol.hpp"
-#include "ns3/ndnSIM/NFD/daemon/mgmt/strategy-choice-manager.hpp"
-#include "ns3/ndnSIM/NFD/daemon/fw/forwarder.hpp"
-#include "ns3/ndnSIM/NFD/daemon/table/strategy-choice.hpp"
+#include "../model/ndn-l3-protocol.hpp"
+#include "../NFD/daemon/mgmt/strategy-choice-manager.hpp"
+#include "../NFD/daemon/fw/forwarder.hpp"
+#include "../NFD/daemon/table/strategy-choice.hpp"
 
 namespace ndn {
 namespace nfd {

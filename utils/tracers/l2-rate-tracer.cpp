@@ -28,6 +28,9 @@
 #include "ns3/node.h"
 #include "ns3/log.h"
 
+#include "../../../internet/model/codel-queue2.h"
+#include "../../../point-to-point/model/point-to-point-net-device.h"
+
 #include <boost/lexical_cast.hpp>
 #include <fstream>
 
@@ -35,8 +38,7 @@ NS_LOG_COMPONENT_DEFINE("L2RateTracer");
 
 namespace ns3 {
 
-static std::list<std::tuple<std::shared_ptr<std::ostream>, std::list<Ptr<L2RateTracer>>>>
-  g_tracers;
+static std::list<std::tuple<std::shared_ptr<std::ostream>, std::list<Ptr<L2RateTracer>>> >g_tracers;
 
 void
 L2RateTracer::Destroy()
@@ -45,7 +47,8 @@ L2RateTracer::Destroy()
 }
 
 void
-L2RateTracer::InstallAll(const std::string& file, Time averagingPeriod /* = Seconds (0.5)*/)
+L2RateTracer::InstallAll(const std::string& file,
+    Time averagingPeriod /* = Seconds (0.5)*/)
 {
   std::list<Ptr<L2RateTracer>> tracers;
   std::shared_ptr<std::ostream> outputStream;
@@ -61,7 +64,7 @@ L2RateTracer::InstallAll(const std::string& file, Time averagingPeriod /* = Seco
     outputStream = os;
   }
   else {
-    outputStream = std::shared_ptr<std::ostream>(&std::cout, std::bind([]{}));
+    outputStream = std::shared_ptr<std::ostream>(&std::cout, std::bind([] {}));
   }
 
   for (NodeList::Iterator node = NodeList::Begin(); node != NodeList::End(); node++) {
@@ -82,8 +85,7 @@ L2RateTracer::InstallAll(const std::string& file, Time averagingPeriod /* = Seco
 }
 
 L2RateTracer::L2RateTracer(std::shared_ptr<std::ostream> os, Ptr<Node> node)
-  : L2Tracer(node)
-  , m_os(os)
+    : L2Tracer(node), m_os(os)
 {
   SetAveragingPeriod(Seconds(1.0));
 }
@@ -113,23 +115,12 @@ L2RateTracer::PeriodicPrinter()
 void
 L2RateTracer::PrintHeader(std::ostream& os) const
 {
-  os << "Time"
-     << "\t"
+  os << "Time" << "\t"
 
-     << "Node"
-     << "\t"
-     << "Interface"
-     << "\t"
+  << "Node" << "\t" << "Interface" << "\t"
 
-     << "Type"
-     << "\t"
-     << "Packets"
-     << "\t"
-     << "Kilobytes"
-     << "\t"
-     << "PacketsRaw"
-     << "\t"
-     << "KilobytesRaw";
+  << "Type" << "\t" << "Packets" << "\t" << "Kilobytes" << "\t" << "PacketsRaw" << "\t"
+      << "KilobytesRaw";
 }
 
 void
@@ -160,6 +151,29 @@ L2RateTracer::Print(std::ostream& os) const
   Time time = Simulator::Now();
 
   PRINTER("Drop", m_drop, "combined");
+  // Print Queue
+  for (uint32_t devId = 0; devId < m_nodePtr->GetNDevices(); devId++) {
+    Ptr<PointToPointNetDevice> p2pnd = DynamicCast<PointToPointNetDevice>(
+        m_nodePtr->GetDevice(devId));
+    if (p2pnd) {
+
+      auto q = p2pnd->GetQueue();
+      Ptr<CoDelQueue2> codelQueue = DynamicCast<CoDelQueue2>(q);
+
+      int64_t timeAboveLimit = -1;
+      if (codelQueue != nullptr) {
+        timeAboveLimit = codelQueue->getTimeOverLimitInNS();
+      }
+
+      uint32_t nPackets = p2pnd->GetQueue()->GetNPackets();
+      uint32_t nBytes = p2pnd->GetQueue()->GetNBytes();
+
+      os << time.ToDouble(Time::S) << "\t" << m_node << "\t" << "combined" << "\t"
+          << "Queue" << "\t" << devId << "\t" << nPackets << "\t" << nBytes << "\t"
+          << timeAboveLimit << "\n";
+    }
+  }
+
 }
 
 void
