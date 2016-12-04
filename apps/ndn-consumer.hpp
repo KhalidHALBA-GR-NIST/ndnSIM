@@ -28,9 +28,10 @@
 #include "ns3/nstime.h"
 #include "ns3/data-rate.h"
 
-#include "ns3/ndnSIM/model/ndn-common.hpp"
-#include "ns3/ndnSIM/utils/ndn-rtt-estimator.hpp"
 #include "ns3/ndnSIM/utils/ndn-fw-hop-count-tag.hpp"
+
+#include "../model/ndn-common.hpp"
+#include "../utils/ndn-rtt-estimator.hpp"
 
 #include <set>
 #include <map>
@@ -69,6 +70,10 @@ public:
    */
   virtual void
   OnTimeout(uint32_t sequenceNumber);
+
+  virtual void
+  OnNack(uint32_t sequenceNumber);
+
 
   /**
    * @brief Actually send packet
@@ -137,7 +142,7 @@ protected:
   Time m_retxTimer;    ///< @brief Currently estimated retransmission timer
   EventId m_retxEvent; ///< @brief Event to check whether or not retransmission should be performed
 
-  Ptr<RttEstimator> m_rtt; ///< @brief RTT estimator
+  Ptr<ndn::RttEstimator> m_rtt; ///< @brief RTT estimator
 
   Time m_offTime;          ///< \brief Time interval between packets
   Name m_interestName;     ///< \brief NDN Name of the Interest (use Name)

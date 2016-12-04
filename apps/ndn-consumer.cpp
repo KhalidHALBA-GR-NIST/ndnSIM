@@ -60,7 +60,8 @@ Consumer::GetTypeId(void)
 
       .AddAttribute("RetxTimer",
                     "Timeout defining how frequent retransmission timeouts should be checked",
-                    StringValue("50ms"),
+//                    StringValue("50ms"),
+                    StringValue("10ms"),
                     MakeTimeAccessor(&Consumer::GetRetxTimer, &Consumer::SetRetxTimer),
                     MakeTimeChecker())
 
@@ -265,6 +266,13 @@ Consumer::OnTimeout(uint32_t sequenceNumber)
                  1); // make sure to disable RTT calculation for this sample
   m_retxSeqs.insert(sequenceNumber);
   ScheduleNextPacket();
+}
+
+void
+Consumer::OnNack(uint32_t seq)
+{
+//       m_nackCounter[seq]++;
+  Consumer::OnTimeout(seq);
 }
 
 void
