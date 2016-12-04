@@ -17,12 +17,9 @@
 //
 // Author: Rajib Bhattacharjea<raj.b@gatech.edu>
 //
-
 // Georgia Tech Network Simulator - Round Trip Time Estimation Class
 // George F. Riley.  Georgia Tech, Spring 2002
-
 // THIS IS A COPY OF rtt-estimator.h from internet module with minor modifications
-
 #ifndef NDN_RTT_ESTIMATOR_H
 #define NDN_RTT_ESTIMATOR_H
 
@@ -40,7 +37,8 @@ namespace ndn {
  *
  * \brief Helper class to store RTT measurements
  */
-class RttHistory {
+class RttHistory
+{
 public:
   RttHistory(SequenceNumber32 s, uint32_t c, Time t);
   RttHistory(const RttHistory& h); // Copy constructor
@@ -58,7 +56,8 @@ typedef std::deque<RttHistory> RttHistory_t;
  *
  * \brief Base class for all RTT Estimators
  */
-class RttEstimator : public Object {
+class RttEstimator : public Object
+{
 public:
   static TypeId
   GetTypeId(void);
@@ -66,7 +65,8 @@ public:
   RttEstimator();
   RttEstimator(const RttEstimator&);
 
-  virtual ~RttEstimator();
+  virtual
+  ~RttEstimator();
 
   virtual TypeId
   GetInstanceTypeId(void) const;
@@ -109,6 +109,12 @@ public:
 
   virtual Ptr<RttEstimator>
   Copy() const = 0;
+
+  void
+  setMaxMultiplier(uint16_t max)
+  {
+    m_maxMultiplier = max;
+  }
 
   /**
    * \brief Increase the estimation multiplier up to MaxMultiplier.

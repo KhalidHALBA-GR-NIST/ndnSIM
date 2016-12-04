@@ -64,20 +64,20 @@ public:
    * @brief Install a built-in strategy @p strategy on @p node for @p namePrefix namespace
    */
   static void
-  Install(Ptr<Node> node, const Name& namePrefix, const Name& strategy);
+  Install(Ptr<Node> node, const Name& namePrefix, const ::ndn::Name& strategy);
 
   /**
    * @brief Install a built-in strategy @p strategy on nodes in @p c container for
    *        @p namePrefix namespace
    */
   static void
-  Install(const NodeContainer& c, const Name& namePrefix, const Name& strategy);
+  Install(const NodeContainer& c, const Name& namePrefix, const ::ndn::Name& strategy);
 
   /**
    * @brief Install a built-in strategy @p strategy on all nodes for @p namePrefix namespace
    */
   static void
-  InstallAll(const Name& namePrefix, const Name& strategy);
+  InstallAll(const Name& namePrefix, const ::ndn::Name& strategy);
 
   /**
    * @brief Install a custom strategy on @p node for @p namePrefix namespace
@@ -85,7 +85,7 @@ public:
    */
   template<class Strategy>
   static void
-  Install(Ptr<Node> node, const Name& namePrefix);
+  Install(Ptr<Node> node, const ::ndn::Name& namePrefix);
 
   /**
    * @brief Install a custom strategy on nodes in @p c container for @p namePrefix namespace
@@ -93,7 +93,7 @@ public:
    */
   template<class Strategy>
   static void
-  Install(const NodeContainer& c, const Name& namePrefix);
+  Install(const NodeContainer& c, const ::ndn::Name& namePrefix);
 
   /**
    * @brief Install a custom strategy on all nodes for @p namePrefix namespace
@@ -101,7 +101,7 @@ public:
    */
   template<class Strategy>
   static void
-  InstallAll(const Name& namePrefix);
+  InstallAll(const ::ndn::Name& namePrefix);
 
 private:
   static void
@@ -110,7 +110,7 @@ private:
 
 template<class Strategy>
 inline void
-StrategyChoiceHelper::Install(Ptr<Node> node, const Name& namePrefix)
+StrategyChoiceHelper::Install(Ptr<Node> node, const ::ndn::Name& namePrefix)
 {
   Ptr<L3Protocol> l3Protocol = node->GetObject<L3Protocol>();
   NS_ASSERT(l3Protocol != nullptr);
@@ -128,7 +128,7 @@ StrategyChoiceHelper::Install(Ptr<Node> node, const Name& namePrefix)
 
 template<class Strategy>
 inline void
-StrategyChoiceHelper::Install(const NodeContainer& c, const Name& namePrefix)
+StrategyChoiceHelper::Install(const NodeContainer& c, const ::ndn::Name& namePrefix)
 {
   for (NodeContainer::Iterator i = c.Begin(); i != c.End(); ++i) {
     Install<Strategy>(*i, namePrefix);
@@ -137,7 +137,7 @@ StrategyChoiceHelper::Install(const NodeContainer& c, const Name& namePrefix)
 
 template<class Strategy>
 inline void
-StrategyChoiceHelper::InstallAll(const Name& namePrefix)
+StrategyChoiceHelper::InstallAll(const ::ndn::Name& namePrefix)
 {
   Install<Strategy>(NodeContainer::GetGlobal(), namePrefix);
 }

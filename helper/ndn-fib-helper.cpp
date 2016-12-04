@@ -85,7 +85,7 @@ FibHelper::RemoveNextHop(const ControlParameters& parameters, Ptr<Node> node)
 }
 
 void
-FibHelper::AddRoute(Ptr<Node> node, const Name& prefix, shared_ptr<Face> face, int32_t metric)
+FibHelper::AddRoute(Ptr<Node> node, const ::ndn::Name& prefix, shared_ptr<Face> face, int32_t metric)
 {
   NS_LOG_LOGIC("[" << node->GetId() << "]$ route add " << prefix << " via " << face->getLocalUri()
                    << " metric " << metric);
@@ -104,7 +104,7 @@ FibHelper::AddRoute(Ptr<Node> node, const Name& prefix, shared_ptr<Face> face, i
 }
 
 void
-FibHelper::AddRoute(Ptr<Node> node, const Name& prefix, uint32_t faceId, int32_t metric)
+FibHelper::AddRoute(Ptr<Node> node, const ::ndn::Name& prefix, uint32_t faceId, int32_t metric)
 {
   Ptr<L3Protocol> ndn = node->GetObject<L3Protocol>();
   NS_ASSERT_MSG(ndn != 0, "Ndn stack should be installed on the node");
@@ -117,7 +117,7 @@ FibHelper::AddRoute(Ptr<Node> node, const Name& prefix, uint32_t faceId, int32_t
 }
 
 void
-FibHelper::AddRoute(const std::string& nodeName, const Name& prefix, uint32_t faceId,
+FibHelper::AddRoute(const std::string& nodeName, const ::ndn::Name& prefix, uint32_t faceId,
                     int32_t metric)
 {
   Ptr<Node> node = Names::Find<Node>(nodeName);
@@ -134,7 +134,7 @@ FibHelper::AddRoute(const std::string& nodeName, const Name& prefix, uint32_t fa
 }
 
 void
-FibHelper::AddRoute(Ptr<Node> node, const Name& prefix, Ptr<Node> otherNode, int32_t metric)
+FibHelper::AddRoute(Ptr<Node> node, const ::ndn::Name& prefix, Ptr<Node> otherNode, int32_t metric)
 {
   for (uint32_t deviceId = 0; deviceId < node->GetNDevices(); deviceId++) {
     Ptr<PointToPointNetDevice> netDevice =
@@ -165,7 +165,7 @@ FibHelper::AddRoute(Ptr<Node> node, const Name& prefix, Ptr<Node> otherNode, int
 }
 
 void
-FibHelper::AddRoute(const std::string& nodeName, const Name& prefix,
+FibHelper::AddRoute(const std::string& nodeName, const ::ndn::Name& prefix,
                     const std::string& otherNodeName, int32_t metric)
 {
   Ptr<Node> node = Names::Find<Node>(nodeName);

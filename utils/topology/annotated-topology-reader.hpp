@@ -22,7 +22,7 @@
 #ifndef __ANNOTATED_TOPOLOGY_READER_H__
 #define __ANNOTATED_TOPOLOGY_READER_H__
 
-#include "ns3/topology-reader.h"
+#include "../../../topology-read/model/topology-reader.h"
 #include "ns3/random-variable-stream.h"
 #include "ns3/object-factory.h"
 

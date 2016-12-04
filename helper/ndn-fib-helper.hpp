@@ -20,8 +20,9 @@
 #ifndef NDN_FIB_HELPER_H
 #define NDN_FIB_HELPER_H
 
-#include "ns3/ndnSIM/model/ndn-common.hpp"
-#include "ns3/ndnSIM/model/ndn-face.hpp"
+#include "../model/ndn-common.hpp"
+#include "../model/ndn-face.hpp"
+#include "../../../src/network/model/node.h"
 
 #include "ns3/node.h"
 #include "ns3/object-vector.h"
@@ -53,7 +54,7 @@ public:
    * \param metric Routing metric
    */
   static void
-  AddRoute(Ptr<Node> node, const Name& prefix, shared_ptr<Face> face, int32_t metric);
+  AddRoute(Ptr<Node> node, const ::ndn::Name& prefix, shared_ptr<Face> face, int32_t metric);
 
   /**
    * \brief Add forwarding entry to FIB
@@ -64,7 +65,7 @@ public:
    * \param metric Routing metric
    */
   static void
-  AddRoute(const std::string& nodeName, const Name& prefix, uint32_t faceId, int32_t metric);
+  AddRoute(const std::string& nodeName, const ::ndn::Name& prefix, uint32_t faceId, int32_t metric);
 
   /**
    * \brief Add forwarding entry to FIB
@@ -75,7 +76,7 @@ public:
    * \param metric Routing metric
    */
   static void
-  AddRoute(Ptr<Node> node, const Name& prefix, uint32_t faceId, int32_t metric);
+  AddRoute(Ptr<Node> node, const ::ndn::Name& prefix, uint32_t faceId, int32_t metric);
 
   /**
    * @brief Add forwarding entry to FIB (work only with point-to-point links)
@@ -86,7 +87,7 @@ public:
    * \param metric Routing metric
    */
   static void
-  AddRoute(Ptr<Node> node, const Name& prefix, Ptr<Node> otherNode, int32_t metric);
+  AddRoute(Ptr<Node> node, const ::ndn::Name& prefix, Ptr<Node> otherNode, int32_t metric);
 
   /**
    * @brief Add forwarding entry to FIB (work only with point-to-point links)
@@ -98,7 +99,7 @@ public:
    * \param metric Routing metric
    */
   static void
-  AddRoute(const std::string& nodeName, const Name& prefix, const std::string& otherNodeName,
+  AddRoute(const std::string& nodeName, const ::ndn::Name& prefix, const std::string& otherNodeName,
            int32_t metric);
 
   /**
